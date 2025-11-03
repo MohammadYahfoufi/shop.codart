@@ -9,7 +9,7 @@ const ProductRenderer = {
    */
   renderProduct: (product, container) => {
     // Default image if product doesn't have one
-    const defaultImage = 'images/product-thumb-1.png';
+    const defaultImage = 'images/powerbank.png';
     const productImage = product.image || product.images?.[0] || defaultImage;
     const price = product.price || 0;
     const discount = product.discount || 0;
@@ -109,7 +109,7 @@ const ProductRenderer = {
     }
     
     products.forEach(product => {
-      const defaultImage = 'images/product-thumb-1.png';
+      const defaultImage = 'images/powerbank.png';
       const productImage = product.image || product.images?.[0] || defaultImage;
       const price = product.price || 0;
       const discount = product.discount || 0;
