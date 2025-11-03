@@ -205,10 +205,13 @@
                 </ul>
               </div>
             </div>
-            <div class="col-11 col-md-7 d-flex align-items-center">
+            <div class="col-11 col-md-7 d-flex align-items-center position-relative">
               <form id="search-form" class="w-100" action="index.html" method="post">
-                <input type="text" class="form-control border-0 bg-transparent" placeholder="Search for products..." />
+                <input type="text" id="search-input" class="form-control border-0 bg-transparent" placeholder="Search for products..." autocomplete="off" />
               </form>
+              <div id="search-results" class="position-absolute top-100 start-0 w-100 bg-white border rounded shadow-lg mt-2" style="display: none; z-index: 1000; max-height: 400px; overflow-y: auto;">
+                <!-- Search results will be displayed here -->
+              </div>
             </div>
             <div class="col-1 d-flex align-items-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">

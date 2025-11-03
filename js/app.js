@@ -1922,5 +1922,236 @@
   window.updateCartCount = updateCartCount;
   window.loadCart = loadCart;
 
+  // Search functionality
+  let searchTimeout;
+  let allProducts = [];
+  
+  // Load all products for search
+  async function loadProductsForSearch() {
+    try {
+      const response = await window.ECommerceAPI.Products.getAll();
+      allProducts = Array.isArray(response) ? response : (response.data || response.products || []);
+    } catch (error) {
+      console.error('Error loading products for search:', error);
+      allProducts = [];
+    }
+  }
+  
+  // Search products
+  function searchProducts(query) {
+    if (!query || query.trim().length < 2) {
+      document.getElementById('search-results').style.display = 'none';
+      return;
+    }
+    
+    const searchTerm = query.toLowerCase().trim();
+    const filtered = allProducts.filter(product => {
+      const name = (product.name || '').toLowerCase();
+      const description = (product.description || '').toLowerCase();
+      return name.includes(searchTerm) || description.includes(searchTerm);
+    }).slice(0, 5); // Limit to 5 results
+    
+    displaySearchResults(filtered);
+  }
+  
+  // Display search results
+  function displaySearchResults(products) {
+    const resultsContainer = document.getElementById('search-results');
+    
+    if (products.length === 0) {
+      resultsContainer.innerHTML = '<div class="p-3 text-muted text-center">No products found</div>';
+      resultsContainer.style.display = 'block';
+      return;
+    }
+    
+    resultsContainer.innerHTML = products.map(product => {
+      const productImage = product.image || product.images?.[0] || 'images/powerbank.png';
+      const price = product.price || 0;
+      const productName = product.name || 'Product';
+      const productId = product.id || product._id;
+      
+      return `
+        <div class="search-result-item search-product-link p-3 border-bottom" style="cursor: pointer; transition: background-color 0.2s;" 
+             onmouseover="this.style.backgroundColor='#f8f9fa'" 
+             onmouseout="this.style.backgroundColor='white'"
+             data-product-id="${productId}">
+          <div class="d-flex align-items-center gap-3">
+            <img src="${productImage}" alt="${productName}" 
+                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" 
+                 onerror="this.src='images/powerbank.png'">
+            <div class="flex-grow-1">
+              <h6 class="mb-1" style="font-size: 14px; font-weight: 600;">${productName}</h6>
+              <p class="mb-0 text-primary fw-bold" style="font-size: 14px;">$${price.toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    resultsContainer.style.display = 'block';
+  }
+  
+  // Setup search event listeners
+  function setupSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    
+    if (!searchInput) return;
+    
+    // Load products when search input is focused
+    searchInput.addEventListener('focus', () => {
+      if (allProducts.length === 0) {
+        loadProductsForSearch();
+      }
+    });
+    
+    // Search as user types
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      const query = e.target.value;
+      
+      searchTimeout = setTimeout(() => {
+        searchProducts(query);
+      }, 300); // Debounce for 300ms
+    });
+    
+    // Hide results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.style.display = 'none';
+      }
+    });
+    
+    // Prevent form submission
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = searchInput.value;
+        if (query.trim()) {
+          searchProducts(query);
+        }
+      });
+    }
+  }
+  
+  // Handle search result clicks
+  $(document).on('click', '.search-product-link', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const productId = this.getAttribute('data-product-id');
+    
+    // Hide search results first
+    const searchResults = document.getElementById('search-results');
+    const searchInput = document.getElementById('search-input');
+    if (searchResults) searchResults.style.display = 'none';
+    if (searchInput) searchInput.value = '';
+    
+    // Convert productId to string for comparison
+    const searchId = String(productId);
+    
+    // Function to find product card
+    function findProductCard() {
+      let productCard = null;
+      
+      // First, try direct selector in product-grid (trending section)
+      const productGrid = document.querySelector('.product-grid');
+      if (productGrid) {
+        productCard = productGrid.querySelector(`.product-item[data-product-id="${searchId}"]`);
+      }
+      
+      // If not found, try direct selector anywhere
+      if (!productCard) {
+        productCard = document.querySelector(`.product-item[data-product-id="${searchId}"]`);
+      }
+      
+      // If not found, search through all product items (including in trending section)
+      if (!productCard) {
+        const allProductItems = document.querySelectorAll('.product-item');
+        for (let i = 0; i < allProductItems.length; i++) {
+          const item = allProductItems[i];
+          const itemId = String(item.getAttribute('data-product-id') || '');
+          if (itemId === searchId) {
+            productCard = item;
+            break;
+          }
+        }
+      }
+      
+      // Also check parent .col elements that might contain the product-item
+      if (!productCard) {
+        const allCols = document.querySelectorAll('.product-grid .col, .col');
+        for (let i = 0; i < allCols.length; i++) {
+          const col = allCols[i];
+          const productItem = col.querySelector('.product-item');
+          if (productItem) {
+            const itemId = String(productItem.getAttribute('data-product-id') || '');
+            if (itemId === searchId) {
+              productCard = productItem;
+              break;
+            }
+          }
+        }
+      }
+      
+      return productCard;
+    }
+    
+    // Try to find the product card
+    let productCard = findProductCard();
+    
+    // If not found, wait a bit for products to load and try again
+    if (!productCard) {
+      setTimeout(() => {
+        productCard = findProductCard();
+        if (productCard) {
+          scrollToProduct(productCard);
+        } else {
+          console.log('Product card not found on page, ID:', productId);
+          alert('Product not found on this page. It may not be loaded yet or may be in a different section.');
+        }
+      }, 500);
+      return;
+    }
+    
+    // Function to scroll and highlight product
+    function scrollToProduct(card) {
+      setTimeout(() => {
+        const cardPosition = card.getBoundingClientRect().top + window.pageYOffset;
+        const offset = 150; // Offset from top
+        
+        window.scrollTo({
+          top: cardPosition - offset,
+          behavior: 'smooth'
+        });
+        
+        // Highlight the product card with animation
+        card.style.transition = 'box-shadow 0.3s ease, transform 0.3s ease';
+        card.style.boxShadow = '0 0 30px rgba(0, 123, 255, 0.8)';
+        card.style.transform = 'scale(1.02)';
+        card.style.zIndex = '10';
+        card.style.position = 'relative';
+        
+        setTimeout(() => {
+          card.style.boxShadow = '';
+          card.style.transform = '';
+          card.style.zIndex = '';
+          card.style.position = '';
+        }, 3000);
+      }, 100);
+    }
+    
+    scrollToProduct(productCard);
+  });
+  
+  // Initialize search when DOM is ready
+  $(document).ready(function() {
+    setupSearch();
+    // Load products for search after a delay
+    setTimeout(() => {
+      loadProductsForSearch();
+    }, 1000);
+  });
+
 })(jQuery);
 
