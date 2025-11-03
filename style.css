@@ -839,7 +839,7 @@ footer .footer-menu > img {
 }
 .category-carousel .category-item img {
   flex-shrink: 0;
-  height: 50px;
+  height: 80px;
   width: auto;
   object-fit: contain;
 }

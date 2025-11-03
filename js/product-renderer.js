@@ -159,6 +159,67 @@ const ProductRenderer = {
   },
   
   /**
+   * Get appropriate icon for category based on name
+   * Uses Photoroom icons from icons folder
+   */
+  getCategoryIcon: (categoryName) => {
+    if (!categoryName) return 'images/icons/electronics-Photoroom.png';
+    
+    const name = categoryName.toLowerCase();
+    
+    // Map category names to Photoroom icons
+    if (name.includes('phone') && name.includes('case')) {
+      return 'images/icons/phone cases-Photoroom.png';
+    } else if (name.includes('charger') || name.includes('charging') || name.includes('power')) {
+      return 'images/icons/phone charger-Photoroom.png';
+    } else if (name.includes('watch') || name.includes('smartwatch')) {
+      return 'images/icons/smart watches-Photoroom.png';
+    } else if (name.includes('accessories') || name.includes('accessory')) {
+      return 'images/icons/electronics-Photoroom.png';
+    } else if (name.includes('phone')) {
+      return 'images/icons/phone cases-Photoroom.png';
+    } else if (name.includes('device') || name.includes('gadget') || name.includes('electronics')) {
+      return 'images/icons/electronics-Photoroom.png';
+    } else if (name.includes('audio') || name.includes('headphone') || name.includes('headset') || name.includes('speaker')) {
+      return 'images/icons/electronics-Photoroom.png';
+    } else if (name.includes('cable') || name.includes('wire')) {
+      return 'images/icons/phone charger-Photoroom.png';
+    } else if (name.includes('book')) {
+      return 'images/icons/electronics-Photoroom.png';
+    } else if (name.includes('car')) {
+      return 'images/icons/car accessories-Photoroom.png';
+    } else {
+      return 'images/icons/electronics-Photoroom.png';
+    }
+  },
+  
+  /**
+   * Get fallback icon based on category name (uses Photoroom icons or existing images)
+   */
+  getFallbackIcon: (categoryName) => {
+    if (!categoryName) return 'images/icons/electronics-Photoroom.png';
+    
+    const name = categoryName.toLowerCase();
+    
+    // Use Photoroom icons as fallbacks
+    if (name.includes('charger') || name.includes('charging') || name.includes('power')) {
+      return 'images/icons/phone charger-Photoroom.png';
+    } else if (name.includes('audio') || name.includes('headphone') || name.includes('headset') || name.includes('speaker')) {
+      return 'images/icons/electronics-Photoroom.png';
+    } else if (name.includes('accessories') || name.includes('accessory')) {
+      return 'images/icons/electronics-Photoroom.png';
+    } else if (name.includes('phone') || name.includes('case')) {
+      return 'images/icons/phone cases-Photoroom.png';
+    } else if (name.includes('watch') || name.includes('smartwatch')) {
+      return 'images/icons/smart watches-Photoroom.png';
+    } else if (name.includes('car')) {
+      return 'images/icons/car accessories-Photoroom.png';
+    } else {
+      return 'images/icons/electronics-Photoroom.png';
+    }
+  },
+
+  /**
    * Render categories
    */
   renderCategories: (categories, containerSelector) => {
@@ -173,11 +234,13 @@ const ProductRenderer = {
     }
     
     categories.forEach(category => {
+      const categoryIcon = category.image || ProductRenderer.getCategoryIcon(category.name);
+      const fallbackIcon = ProductRenderer.getFallbackIcon(category.name);
       const categoryCard = `
         <div class="col">
           <a href="#" class="category-item" data-category-id="${category.id}">
             <div class="category-icon">
-              <img src="${category.image || 'images/icon-vegetables-broccoli.png'}" alt="${category.name}" onerror="this.src='images/icon-vegetables-broccoli.png'">
+              <img src="${categoryIcon}" alt="${category.name}" onerror="if (this.src !== '${fallbackIcon}') { this.src = '${fallbackIcon}'; }" style="width: auto; height: 80px; object-fit: contain; display: block;">
             </div>
             <h4>${category.name}</h4>
           </a>

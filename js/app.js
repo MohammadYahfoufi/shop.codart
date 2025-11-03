@@ -394,10 +394,16 @@
             categoryItem.className = 'nav-link category-item swiper-slide';
             categoryItem.setAttribute('data-category-id', category.id);
             
-            const iconSrc = category.image || 'images/icon-vegetables-broccoli.png';
+            // Get Photoroom icon path
+            const photoroomIcon = category.image || (window.ProductRenderer ? window.ProductRenderer.getCategoryIcon(category.name) : null);
+            // Get fallback icon (Photoroom icons)
+            const fallbackIcon = window.ProductRenderer ? window.ProductRenderer.getFallbackIcon(category.name) : 'images/icons/electronics-Photoroom.png';
             
+            // Use Photoroom icon if available, otherwise use fallback
+            const iconSrc = photoroomIcon || fallbackIcon;
+
             categoryItem.innerHTML = `
-              <img src="${iconSrc}" alt="${category.name || 'Category'}" onerror="this.src='images/icon-vegetables-broccoli.png'">
+              <img src="${iconSrc}" alt="${category.name || 'Category'}" onerror="console.log('Failed to load ${iconSrc}, using fallback'); this.src='${fallbackIcon}';" style="width: auto; height: 80px; object-fit: contain; display: block;">
               <h3 class="category-title">${category.name || 'Unnamed Category'}</h3>
             `;
             categoryCarousel.appendChild(categoryItem);
