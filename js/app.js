@@ -2097,23 +2097,6 @@
       return productCard;
     }
     
-    // Try to find the product card
-    let productCard = findProductCard();
-    
-    // If not found, wait a bit for products to load and try again
-    if (!productCard) {
-      setTimeout(() => {
-        productCard = findProductCard();
-        if (productCard) {
-          scrollToProduct(productCard);
-        } else {
-          console.log('Product card not found on page, ID:', productId);
-          alert('Product not found on this page. It may not be loaded yet or may be in a different section.');
-        }
-      }, 500);
-      return;
-    }
-    
     // Function to scroll and highlight product
     function scrollToProduct(card) {
       setTimeout(() => {
@@ -2141,8 +2124,125 @@
       }, 100);
     }
     
+    // Check if we're on index.html
+    const isIndexPage = window.location.pathname.endsWith('index.html') || 
+                        window.location.pathname.endsWith('/') || 
+                        window.location.pathname === '';
+    
+    // Try to find the product card on current page
+    let productCard = findProductCard();
+    
+    // If not found, wait a bit for products to load and try again
+    if (!productCard) {
+      setTimeout(() => {
+        productCard = findProductCard();
+        if (productCard) {
+          scrollToProduct(productCard);
+        } else {
+          // Product not found on current page - navigate to index.html
+          if (!isIndexPage) {
+            // Navigate to index.html with product ID in hash
+            window.location.href = `index.html#product-${productId}`;
+          } else {
+            // On index.html but product not found - wait longer for products to load
+            setTimeout(() => {
+              productCard = findProductCard();
+              if (productCard) {
+                scrollToProduct(productCard);
+              } else {
+                console.log('Product card not found on page, ID:', productId);
+              }
+            }, 2000);
+          }
+        }
+      }, 500);
+      return;
+    }
+    
+    // Product found on current page - scroll to it
     scrollToProduct(productCard);
   });
+  
+  // Handle product scroll when page loads with hash (e.g., index.html#product-123)
+  function scrollToProductFromHash() {
+    const hash = window.location.hash;
+    if (hash && hash.startsWith('#product-')) {
+      const productId = hash.replace('#product-', '');
+      const searchId = String(productId);
+      
+      // Wait for products to load
+      setTimeout(() => {
+        function findProductCard() {
+          let productCard = null;
+          
+          const productGrid = document.querySelector('.product-grid');
+          if (productGrid) {
+            productCard = productGrid.querySelector(`.product-item[data-product-id="${searchId}"]`);
+          }
+          
+          if (!productCard) {
+            productCard = document.querySelector(`.product-item[data-product-id="${searchId}"]`);
+          }
+          
+          if (!productCard) {
+            const allProductItems = document.querySelectorAll('.product-item');
+            for (let i = 0; i < allProductItems.length; i++) {
+              const item = allProductItems[i];
+              const itemId = String(item.getAttribute('data-product-id') || '');
+              if (itemId === searchId) {
+                productCard = item;
+                break;
+              }
+            }
+          }
+          
+          return productCard;
+        }
+        
+        let productCard = findProductCard();
+        
+        // Try multiple times with increasing delays
+        let attempts = 0;
+        const maxAttempts = 10;
+        
+        function tryScroll() {
+          productCard = findProductCard();
+          if (productCard) {
+            const cardPosition = productCard.getBoundingClientRect().top + window.pageYOffset;
+            const offset = 150;
+            
+            window.scrollTo({
+              top: cardPosition - offset,
+              behavior: 'smooth'
+            });
+            
+            productCard.style.transition = 'box-shadow 0.3s ease, transform 0.3s ease';
+            productCard.style.boxShadow = '0 0 30px rgba(0, 123, 255, 0.8)';
+            productCard.style.transform = 'scale(1.02)';
+            productCard.style.zIndex = '10';
+            productCard.style.position = 'relative';
+            
+            setTimeout(() => {
+              productCard.style.boxShadow = '';
+              productCard.style.transform = '';
+              productCard.style.zIndex = '';
+              productCard.style.position = '';
+            }, 3000);
+            
+            // Clear hash after scrolling
+            setTimeout(() => {
+              window.history.replaceState(null, null, window.location.pathname);
+            }, 1000);
+          } else if (attempts < maxAttempts) {
+            attempts++;
+            setTimeout(tryScroll, 500);
+          }
+        }
+        
+        tryScroll();
+      }, 500);
+    }
+  }
   
   // Initialize search when DOM is ready
   $(document).ready(function() {
@@ -2151,6 +2251,14 @@
     setTimeout(() => {
       loadProductsForSearch();
     }, 1000);
+    
+    // Check for product hash on page load
+    scrollToProductFromHash();
+  });
+  
+  // Also check hash when page is fully loaded
+  window.addEventListener('load', () => {
+    scrollToProductFromHash();
   });
 
 })(jQuery);

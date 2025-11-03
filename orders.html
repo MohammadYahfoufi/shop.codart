@@ -118,26 +118,27 @@
       </div>
     </div>
 
-    <header>
+    <header style="background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1000;">
       <div class="container-fluid">
-        <div class="row py-3 border-bottom">
-          
+        <div class="row align-items-center py-3">
+
           <div class="col-sm-4 col-lg-3 text-center text-sm-start">
             <div class="main-logo">
-              <a href="index.html">
-                <img src="images/codart1.png" alt="Codart Shop" class="img-fluid">
+              <a href="index.html" style="text-decoration: none;">
+                <img src="images/codart1.png" alt="Codart Shop" class="img-fluid" style="max-height: 70px;">
               </a>
             </div>
           </div>
-          
+
           <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
-            <div class="search-bar row bg-light p-2 my-2 rounded-4">
-              <div class="col-md-4 d-none d-md-block">
+            <div class="search-bar" style="background: #f8f9fa; border-radius: 50px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; border: 1px solid #e9ecef; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4A9EFF'; this.style.boxShadow='0 0 0 3px rgba(74, 158, 255, 0.1)'" onmouseout="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
+              <div class="d-none d-md-block" style="border-right: 1px solid #dee2e6; padding-right: 12px; margin-right: 8px;">
                 <div class="custom-category-dropdown">
-                  <button class="custom-dropdown-toggle" type="button" id="categoryDropdownBtn" aria-expanded="false">
+                  <button class="custom-dropdown-toggle border-0 bg-transparent" type="button" id="categoryDropdownBtn" aria-expanded="false" style="font-size: 14px; font-weight: 500; color: #495057; padding: 0;">
                     <span class="dropdown-selected">All Categories</span>
-                    <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M6 9L1 4H11L6 9Z" fill="currentColor"/>
+                    <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-left: 4px;"
+                      xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 9L1 4H11L6 9Z" fill="currentColor" />
                     </svg>
                   </button>
                   <ul class="custom-dropdown-menu" id="categoryDropdownMenu">
@@ -148,30 +149,39 @@
                   </ul>
                 </div>
               </div>
-              <div class="col-11 col-md-7 d-flex align-items-center">
-                <form id="search-form" class="w-100" action="index.html" method="post">
-                  <input type="text" class="form-control border-0 bg-transparent" placeholder="Search for products..." />
+              <div class="flex-grow-1 position-relative">
+                <form id="search-form" class="w-100 m-0" action="index.html" method="post">
+                  <input type="text" id="search-input" class="form-control border-0 bg-transparent" placeholder="Search for products..." autocomplete="off" style="font-size: 14px; padding: 0;" />
                 </form>
+                <div id="search-results" class="position-absolute top-100 start-0 w-100 bg-white border rounded shadow-lg mt-2" style="display: none; z-index: 1000; max-height: 400px; overflow-y: auto; border-radius: 12px;">
+                  <!-- Search results will be displayed here -->
+                </div>
               </div>
-              <div class="col-1 d-flex align-items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/></svg>
-              </div>
+              <button type="submit" form="search-form" class="bg-transparent border-0 p-0" style="color: #4A9EFF; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
+                </svg>
+              </button>
             </div>
           </div>
-          
-          <div class="col-sm-8 col-lg-4 d-flex justify-content-end gap-5 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
-            <div class="support-box text-end d-none d-xl-block">
-              <span class="fs-6 text-muted">For Support:</span>
-              <h5 class="mb-0"><a href="tel:+96170031455" class="text-decoration-none text-dark">+961 70031455</a></h5>
-              <div><a href="https://wa.me/96170031455" class="text-decoration-none" target="_blank" rel="noopener"></a></div>
+
+          <div
+            class="col-sm-8 col-lg-4 d-flex justify-content-end gap-4 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
+            <div class="support-box text-end d-none d-xl-block" style="padding-right: 20px; border-right: 1px solid #e9ecef;">
+              <span class="fs-6" style="color: #6c757d; font-size: 12px !important; display: block;">For Support</span>
+              <a href="tel:+96170031455" class="text-decoration-none" style="color: #212529; font-weight: 600; font-size: 14px;">+961 70031455</a>
             </div>
 
-            <ul class="d-flex justify-content-end list-unstyled m-0 align-items-center">
+            <ul class="d-flex justify-content-end list-unstyled m-0 align-items-center gap-2">
               <li class="dropdown">
-                <button type="button" class="rounded-circle bg-light p-2 mx-1 border-0" id="user-icon-link">
-                  <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#user"></use></svg>
+                <button type="button" class="rounded-circle border-0 p-2" id="user-icon-link" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
+                  <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
+                    <use xlink:href="#user"></use>
+                  </svg>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end d-none" id="user-profile-menu" aria-labelledby="user-icon-link">
+                <ul class="dropdown-menu dropdown-menu-end d-none" id="user-profile-menu"
+                  aria-labelledby="user-icon-link">
                   <li>
                     <a class="dropdown-item" href="edit-profile.html" id="edit-profile-btn">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -180,7 +190,17 @@
                       <span>Edit Profile</span>
                     </a>
                   </li>
-                  <li><hr class="dropdown-divider"></li>
+                  <li>
+                    <a class="dropdown-item" href="orders.html">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <use xlink:href="#box"></use>
+                      </svg>
+                      <span>My Orders</span>
+                    </a>
+                  </li>
+                  <li>
+                    <hr class="dropdown-divider">
+                  </li>
                   <li>
                     <a class="dropdown-item" href="#" id="logout-btn-dropdown">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -193,26 +213,42 @@
                 <span class="user-info d-none" id="user-info-display"></span>
               </li>
               <li>
-                <a href="wishlist.html" class="rounded-circle bg-light p-2 mx-1">
-                  <svg width="24" height="24" viewBox="0 0 24 24" style="color: #e91e63;"><use xlink:href="#heart"></use></svg>
+                <a href="wishlist.html" class="rounded-circle border-0 p-2" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; text-decoration: none;" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
+                  <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
+                    <use xlink:href="#heart"></use>
+                  </svg>
                 </a>
               </li>
               <li class="d-lg-none">
-                <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                  <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#cart"></use></svg>
+                <a href="#" class="rounded-circle border-0 p-2" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; text-decoration: none;" data-bs-toggle="offcanvas"
+                  data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
+                  <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
+                    <use xlink:href="#cart"></use>
+                  </svg>
                 </a>
               </li>
               <li class="d-lg-none">
-                <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSearch" aria-controls="offcanvasSearch">
-                  <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#search"></use></svg>
+                <a href="#" class="rounded-circle border-0 p-2" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; text-decoration: none;" data-bs-toggle="offcanvas"
+                  data-bs-target="#offcanvasSearch" aria-controls="offcanvasSearch" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
+                  <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
+                    <use xlink:href="#search"></use>
+                  </svg>
                 </a>
               </li>
             </ul>
 
             <div class="cart text-end d-none d-lg-block dropdown">
-              <button class="border-0 bg-transparent d-flex flex-column gap-2 lh-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
-                <span class="fs-6 text-muted dropdown-toggle">Your Cart</span>
-                <span class="cart-total fs-5 fw-bold" id="cart-total-header">$0.00</span>
+              <button class="border-0 bg-transparent d-flex align-items-center gap-2 lh-1 p-2 rounded" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" style="transition: all 0.3s ease; min-width: 100px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+                <div class="d-flex flex-column gap-1">
+                  <span class="fs-6 d-flex align-items-center gap-1" style="color: #6c757d; font-size: 12px !important; font-weight: 500;">
+                    Your Cart
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 2px;">
+                      <path d="M6 9L1 4H11L6 9Z" fill="currentColor" />
+                    </svg>
+                  </span>
+                  <span class="cart-total fw-bold" id="cart-total-header" style="color: #4A9EFF; font-size: 16px;">$0.00</span>
+                </div>
               </button>
             </div>
           </div>
