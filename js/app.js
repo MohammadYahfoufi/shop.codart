@@ -1519,15 +1519,43 @@
         return;
       }
       
+      // Check if cart is empty before proceeding
+      try {
+        const cart = await window.ECommerceAPI.Cart.get();
+        let cartItems = [];
+        if (cart && Array.isArray(cart)) {
+          cartItems = cart;
+        } else if (cart && cart.items && Array.isArray(cart.items)) {
+          cartItems = cart.items;
+        } else if (cart && cart.data && Array.isArray(cart.data)) {
+          cartItems = cart.data;
+        } else if (cart && cart.cart && cart.cart.items && Array.isArray(cart.cart.items)) {
+          cartItems = cart.cart.items;
+        }
+        
+        if (!cartItems || cartItems.length === 0) {
+          alert('Your cart is empty. Please add items to cart before checkout.');
+          return;
+        }
+      } catch (cartError) {
+        console.error('Error checking cart:', cartError);
+        alert('Unable to load cart. Please try again.');
+        return;
+      }
+      
       try {
         // Create order from cart
         const order = await window.ECommerceAPI.Orders.create();
         if (order) {
-          alert('Order placed successfully! Order ID: ' + (order.id || order.orderId || 'N/A'));
-          // Clear cart and reload
+          // Close the cart offcanvas
+          const cartOffcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('offcanvasCart'));
+          if (cartOffcanvas) {
+            cartOffcanvas.hide();
+          }
+          
+          // Clear cart and redirect to orders page
           await window.ECommerceAPI.Cart.clear();
-          await loadCart();
-          updateCartCount();
+          window.location.href = 'orders.html';
         }
       } catch (error) {
         console.error('Error creating order:', error);
