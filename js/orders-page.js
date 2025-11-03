@@ -30,6 +30,9 @@ async function loadOrders() {
 
     // Fetch orders from API
     const orders = await window.ECommerceAPI.Orders.getMyOrders();
+    
+    // Debug logging to understand API response structure
+    console.log('Orders API response:', orders);
 
     // Hide loading state
     if (loadingEl) loadingEl.style.display = 'none';
@@ -42,6 +45,12 @@ async function loadOrders() {
       ordersList = orders.data;
     } else if (orders && orders.orders && Array.isArray(orders.orders)) {
       ordersList = orders.orders;
+    }
+    
+    // Log first order structure for debugging
+    if (ordersList.length > 0) {
+      console.log('First order structure:', ordersList[0]);
+      console.log('First order keys:', Object.keys(ordersList[0]));
     }
 
     if (ordersList.length === 0) {
@@ -99,8 +108,39 @@ function renderOrders(orders) {
       }
     }
 
-    // Get items count
-    const itemsCount = order.items && Array.isArray(order.items) ? order.items.length : 0;
+    // Get items count - check multiple possible property names
+    let items = null;
+    let itemsCount = 0;
+    let totalQuantity = 0;
+    
+    // Check various possible property names for items
+    if (order.items && Array.isArray(order.items)) {
+      items = order.items;
+    } else if (order.orderItems && Array.isArray(order.orderItems)) {
+      items = order.orderItems;
+    } else if (order.order_items && Array.isArray(order.order_items)) {
+      items = order.order_items;
+    } else if (order.products && Array.isArray(order.products)) {
+      items = order.products;
+    }
+    
+    if (items) {
+      itemsCount = items.length;
+      // Calculate total quantity if items have quantity property
+      totalQuantity = items.reduce((sum, item) => {
+        return sum + (item.quantity || item.qty || 1);
+      }, 0);
+    }
+    
+    // Debug logging to understand API response structure
+    if (!items && totalPrice > 0) {
+      console.log('Order has total price but no items found:', {
+        orderId,
+        totalPrice,
+        orderKeys: Object.keys(order),
+        order: order
+      });
+    }
 
     // Status badge color
     let statusClass = 'bg-secondary';
@@ -131,7 +171,7 @@ function renderOrders(orders) {
                 <svg width="18" height="18" viewBox="0 0 24 24" class="me-2">
                   <use xlink:href="#box"></use>
                 </svg>
-                <span class="small">${itemsCount} item${itemsCount !== 1 ? 's' : ''}</span>
+                <span class="small">${totalQuantity > 0 ? totalQuantity : itemsCount} ${(totalQuantity > 0 ? totalQuantity : itemsCount) !== 1 ? 'items' : 'item'}</span>
               </div>
             </div>
             
@@ -166,14 +206,120 @@ $(document).on('click', '.order-details-btn', async function() {
   
   try {
     const order = await window.ECommerceAPI.Orders.getById(orderId);
+    console.log('Order details response:', order);
+    
     if (order) {
+      // Handle nested response structure
+      const orderData = order.data || order.order || order;
+      
+      // Get items from various possible property names and nested structures
+      let items = null;
+      
+      // Check direct properties
+      if (orderData.items && Array.isArray(orderData.items)) {
+        items = orderData.items;
+      } else if (orderData.orderItems && Array.isArray(orderData.orderItems)) {
+        items = orderData.orderItems;
+      } else if (orderData.order_items && Array.isArray(orderData.order_items)) {
+        items = orderData.order_items;
+      } else if (orderData.products && Array.isArray(orderData.products)) {
+        items = orderData.products;
+      } else if (orderData.cartItems && Array.isArray(orderData.cartItems)) {
+        items = orderData.cartItems;
+      } else if (orderData.cart_items && Array.isArray(orderData.cart_items)) {
+        items = orderData.cart_items;
+      }
+      
+      // Also check original order object
+      if (!items) {
+        if (order.items && Array.isArray(order.items)) {
+          items = order.items;
+        } else if (order.orderItems && Array.isArray(order.orderItems)) {
+          items = order.orderItems;
+        } else if (order.order_items && Array.isArray(order.order_items)) {
+          items = order.order_items;
+        } else if (order.products && Array.isArray(order.products)) {
+          items = order.products;
+        }
+      }
+      
+      // Debug logging
+      if (!items) {
+        console.log('Items not found in order. Order structure:', {
+          orderKeys: Object.keys(orderData),
+          orderData: orderData,
+          fullOrder: order
+        });
+      }
+      
+      // Format date
+      let formattedDate = 'N/A';
+      const createdAt = orderData.createdAt || orderData.created_at || orderData.date || order.createdAt || order.created_at || order.date;
+      if (createdAt && createdAt !== 'N/A') {
+        try {
+          const date = new Date(createdAt);
+          formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+        } catch (e) {
+          formattedDate = createdAt;
+        }
+      }
+      
+      // Build items list
+      let itemsList = 'No items found in order details';
+      if (items && items.length > 0) {
+        itemsList = items.map((item, index) => {
+          // Try multiple ways to get product name
+          const productName = 
+            item.product?.name || 
+            item.product?.productName ||
+            item.name || 
+            item.productName || 
+            item.product?.title ||
+            item.title ||
+            'Unknown Product';
+          
+          // Try multiple ways to get quantity
+          const quantity = item.quantity || item.qty || item.Quantity || 1;
+          
+          // Try multiple ways to get price
+          const price = 
+            item.price || 
+            item.productPrice || 
+            item.totalPrice ||
+            item.product?.price || 
+            item.product?.productPrice ||
+            (item.quantity && item.price ? (item.quantity * item.price) : 0);
+          
+          const itemTotal = (quantity * price).toFixed(2);
+          return `${index + 1}. ${productName}\n   Qty: ${quantity} × $${price.toFixed(2)} = $${itemTotal}`;
+        }).join('\n\n');
+      } else {
+        // If no items found but total exists, show a message
+        const total = orderData.totalPrice || orderData.total || order.totalPrice || order.total || 0;
+        if (total > 0) {
+          itemsList = `Items information not available in API response.\nTotal order value: $${total.toFixed(2)}`;
+        }
+      }
+      
+      // Get order details
+      const orderIdDisplay = orderData.id || orderData.orderId || order.id || order.orderId || 'N/A';
+      const status = orderData.status || order.status || 'N/A';
+      const total = orderData.totalPrice || orderData.total || order.totalPrice || order.total || 0;
+      
       // Show order details in modal or alert for now
-      const details = `
-Order ID: ${order.id || order.orderId || 'N/A'}
-Status: ${order.status || 'N/A'}
-Total: $${(order.totalPrice || order.total || 0).toFixed(2)}
-Date: ${order.createdAt || order.created_at || 'N/A'}
-      `;
+      const details = `ORDER DETAILS
+
+Order ID: ${orderIdDisplay}
+Status: ${status}
+Date: ${formattedDate}
+Total: $${total.toFixed(2)}
+
+ITEMS:
+${itemsList}`;
       alert(details);
     }
   } catch (error) {
