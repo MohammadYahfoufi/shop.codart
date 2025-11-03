@@ -294,10 +294,17 @@
           </ul>
 
           <div class="cart text-end d-none d-lg-block dropdown">
-            <button class="border-0 bg-transparent d-flex flex-column gap-1 lh-1 p-2 rounded" type="button"
-              data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" style="transition: all 0.3s ease; min-width: 80px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
-              <span class="fs-6" style="color: #6c757d; font-size: 12px !important; font-weight: 500;">Your Cart</span>
-              <span class="cart-total fw-bold" id="cart-total-header" style="color: #4A9EFF; font-size: 16px;">$0.00</span>
+            <button class="border-0 bg-transparent d-flex align-items-center gap-2 lh-1 p-2 rounded" type="button"
+              data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" style="transition: all 0.3s ease; min-width: 100px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
+              <div class="d-flex flex-column gap-1">
+                <span class="fs-6 d-flex align-items-center gap-1" style="color: #6c757d; font-size: 12px !important; font-weight: 500;">
+                  Your Cart
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 2px;">
+                    <path d="M6 9L1 4H11L6 9Z" fill="currentColor" />
+                  </svg>
+                </span>
+                <span class="cart-total fw-bold" id="cart-total-header" style="color: #4A9EFF; font-size: 16px;">$0.00</span>
+              </div>
             </button>
           </div>
         </div>
