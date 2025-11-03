@@ -51,6 +51,18 @@
         <symbol xmlns="http://www.w3.org/2000/svg" id="trash" viewBox="0 0 24 24">
           <path fill="currentColor" d="M10 18a1 1 0 0 0 1-1v-6a1 1 0 0 0-2 0v6a1 1 0 0 0 1 1ZM20 6h-4V5a3 3 0 0 0-3-3h-2a3 3 0 0 0-3 3v1H4a1 1 0 0 0 0 2h1v11a3 3 0 0 0 3 3h8a3 3 0 0 0 3-3V8h1a1 1 0 0 0 0-2ZM10 5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h-4Zm7 14a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8h10Zm-3-1a1 1 0 0 0 1-1v-6a1 1 0 0 0-2 0v6a1 1 0 0 0 1 1Z"/>
         </symbol>
+        <symbol xmlns="http://www.w3.org/2000/svg" id="cart" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M8.5 19a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 8.5 19ZM19 16H7a1 1 0 0 1 0-2h8.491a3.013 3.013 0 0 0 2.885-2.176l1.585-5.55A1 1 0 0 0 19 5H6.74a3.007 3.007 0 0 0-2.82-2H3a1 1 0 0 0 0 2h.921a1.005 1.005 0 0 1 .962.725l.155.545v.005l1.641 5.742A3 3 0 0 0 7 18h12a1 1 0 0 0 0-2Zm-1.326-9l-1.22 4.274a1.005 1.005 0 0 1-.963.726H8.754l-.255-.892L7.326 7ZM16.5 19a1.5 1.5 0 1 0 1.5 1.5a1.5 1.5 0 0 0-1.5-1.5Z"/>
+        </symbol>
+        <symbol xmlns="http://www.w3.org/2000/svg" id="check" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M18.71 7.21a1 1 0 0 0-1.42 0l-7.45 7.46l-3.13-3.14A1 1 0 1 0 5.29 13l3.84 3.84a1 1 0 0 0 1.42 0l8.16-8.16a1 1 0 0 0 0-1.47Z"/>
+        </symbol>
+        <symbol xmlns="http://www.w3.org/2000/svg" id="star-outline" viewBox="0 0 15 15">
+          <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M7.5 9.804L5.337 11l.413-2.533L4 6.674l2.418-.37L7.5 4l1.082 2.304l2.418.37l-1.75 1.793L9.663 11L7.5 9.804Z"/>
+        </symbol>
+        <symbol xmlns="http://www.w3.org/2000/svg" id="search" viewBox="0 0 24 24">
+          <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/>
+        </symbol>
       </defs>
     </svg>
 
@@ -59,7 +71,60 @@
       </div>
     </div>
 
-    <!-- Include header from index.html -->
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="My Cart">
+      <div class="offcanvas-header justify-content-center">
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="order-md-last">
+          <h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-primary">Your cart</span>
+            <span class="badge bg-primary rounded-pill" id="cart-badge-count">0</span>
+          </h4>
+          <div id="cart-items-container">
+            <div class="text-center text-muted py-5">
+              <p>Your cart is empty</p>
+            </div>
+          </div>
+          <div id="cart-total-container" class="d-none">
+            <ul class="list-group mb-3" id="cart-items-list"></ul>
+            <div class="list-group-item d-flex justify-content-between">
+              <span>Total (USD)</span>
+              <strong id="cart-total-price">$0.00</strong>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-outline-danger btn-lg flex-fill" id="clear-cart-btn" type="button">
+                <svg width="18" height="18" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                  <use xlink:href="#trash"></use>
+                </svg>
+                Clear Cart
+              </button>
+              <button class="btn btn-primary btn-lg flex-fill" id="checkout-btn" type="button">
+                Continue to checkout
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasSearch" aria-labelledby="Search">
+      <div class="offcanvas-header justify-content-center">
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="order-md-last">
+          <h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-primary">Search</span>
+          </h4>
+          <form role="search" action="index.html" method="get" class="d-flex mt-3 gap-0">
+            <input class="form-control rounded-start rounded-0 bg-light" type="email" placeholder="What are you looking for?" aria-label="What are you looking for?">
+            <button class="btn btn-dark rounded-end rounded-0" type="submit">Search</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <header>
       <div class="container-fluid">
         <div class="row py-3 border-bottom">
@@ -90,12 +155,12 @@
                   </ul>
                 </div>
               </div>
-              <div class="col-11 col-md-7">
-                <form id="search-form" class="text-center" action="index.html" method="post">
-                  <input type="text" class="form-control border-0 bg-transparent" placeholder="Search for more than 20,000 products" />
+              <div class="col-11 col-md-7 d-flex align-items-center">
+                <form id="search-form" class="w-100" action="index.html" method="post">
+                  <input type="text" class="form-control border-0 bg-transparent" placeholder="Search for products..." />
                 </form>
               </div>
-              <div class="col-1">
+              <div class="col-1 d-flex align-items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z"/></svg>
               </div>
             </div>
@@ -136,7 +201,17 @@
               </li>
               <li>
                 <a href="wishlist.html" class="rounded-circle bg-light p-2 mx-1">
-                  <svg width="24" height="24" viewBox="0 0 24 24" style="color: #e91e63;"><use xlink:href="#heart"></use></svg>
+                  <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#heart"></use></svg>
+                </a>
+              </li>
+              <li class="d-lg-none">
+                <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart">
+                  <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#cart"></use></svg>
+                </a>
+              </li>
+              <li class="d-lg-none">
+                <a href="#" class="rounded-circle bg-light p-2 mx-1" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSearch" aria-controls="offcanvasSearch">
+                  <svg width="24" height="24" viewBox="0 0 24 24"><use xlink:href="#search"></use></svg>
                 </a>
               </li>
             </ul>
@@ -158,22 +233,22 @@
       <div class="container-fluid">
         <div class="row">
           <div class="col-12">
-            <div class="mb-3">
-              <a href="index.html" class="btn btn-outline-primary">
-                Back to Shopping
-                <svg width="18" height="18" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-left: 8px;">
-                  <path fill="currentColor" d="M17.92 11.62a1 1 0 0 0-.21-.33l-5-5a1 1 0 0 0-1.42 1.42l3.3 3.29H7a1 1 0 0 0 0 2h7.59l-3.3 3.29a1 1 0 0 0 0 1.42a1 1 0 0 0 1.42 0l5-5a1 1 0 0 0 .21-.33a1 1 0 0 0 0-.76Z"/>
-                </svg>
-              </a>
-            </div>
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h2 class="mb-0">My Wishlist</h2>
-              <button class="btn btn-outline-danger" id="clear-wishlist-btn" style="display: none;">
-                <svg width="18" height="18" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
-                  <use xlink:href="#trash"></use>
-                </svg>
-                Clear All
-              </button>
+              <div class="d-flex gap-2">
+                <a href="index.html" class="btn btn-outline-primary">
+                  <svg width="18" height="18" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                    <path fill="currentColor" d="M6.08 11.62a1 1 0 0 0 .21.33l5 5a1 1 0 0 0 1.42-1.42l-3.3-3.29H17a1 1 0 0 0 0-2H9.41l3.3-3.29a1 1 0 1 0-1.42-1.42l-5 5a1 1 0 0 0-.21.33a1 1 0 0 0 0 .76Z"/>
+                  </svg>
+                  Back to Shopping
+                </a>
+                <button class="btn btn-outline-danger" id="clear-wishlist-btn" style="display: none;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" style="display: inline-block; vertical-align: middle; margin-right: 8px;">
+                    <use xlink:href="#trash"></use>
+                  </svg>
+                  Clear All
+                </button>
+              </div>
             </div>
 
             <!-- Loading State -->
