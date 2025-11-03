@@ -150,7 +150,7 @@
    * Create a product card for wishlist item
    */
   function createWishlistProductCard(product) {
-    const defaultImage = 'images/product-thumb-1.png';
+    const defaultImage = 'images/powerbank.png';
     const productImage = product.image || product.images?.[0] || product.imageUrl || defaultImage;
     const price = product.price || 0;
     const discount = product.discount || 0;

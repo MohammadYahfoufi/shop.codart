@@ -126,7 +126,7 @@
           // Render first 6-10 products directly in carousel
           const carouselProducts = products.slice(0, Math.min(10, products.length));
           carouselProducts.forEach(product => {
-            const defaultImage = 'images/product-thumb-1.png';
+            const defaultImage = 'images/powerbank.png';
             const productImage = product.image || product.images?.[0] || defaultImage;
             const price = product.price || 0;
             const discount = product.discount || 0;
@@ -1173,7 +1173,7 @@
               description: description || `${productName} - Available now`,
               price: price,
               stock: 100,
-              imageUrl: imageSrc || 'images/product-thumb-1.png',
+              imageUrl: imageSrc || 'images/powerbank.png',
               categoryId: '' // You might want to set a default category
             };
             
@@ -1695,12 +1695,12 @@
             // Get cartItemId - required for remove/update operations
             const cartItemId = item.id || item.cartItemId || item._id;
             
-            const productImage = product.image || product.images?.[0] || product.imageUrl || 'images/product-thumb-1.png';
+            const productImage = product.image || product.images?.[0] || product.imageUrl || 'images/powerbank.png';
             
             cartItemsHTML.push(`
               <li class="list-group-item d-flex justify-content-between align-items-start" data-cart-item-id="${cartItemId}" data-product-id="${productIdValue}">
                 <div class="flex-grow-1 d-flex gap-3">
-                  <img src="${productImage}" alt="${productName}" class="rounded" style="width: 60px; height: 60px; object-fit: cover;" onerror="this.src='images/product-thumb-1.png'">
+                  <img src="${productImage}" alt="${productName}" class="rounded" style="width: 60px; height: 60px; object-fit: cover;" onerror="this.src='images/powerbank.png'">
                   <div class="flex-grow-1">
                     <h6 class="my-0 mb-1">${productName}</h6>
                     <small class="text-body-secondary d-block mb-2">$${price.toFixed(2)} each</small>
