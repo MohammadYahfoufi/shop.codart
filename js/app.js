@@ -1100,6 +1100,16 @@
         return;
       }
 
+      // Check if user has location/address set (warn but don't block)
+      const user = window.ECommerceAPI.Auth.getUser();
+      if (user && (!user.address || !user.latitude || !user.longitude)) {
+        const setLocationNow = confirm('You haven\'t set your delivery address yet. You will need to set it before checkout.\n\nClick OK to set your address now, or Cancel to continue adding to cart.');
+        if (setLocationNow) {
+          window.location.href = 'edit-profile.html';
+          return;
+        }
+      }
+
       // Check if product has API product ID
       const productId = $(this).data('product-id') || $(this).closest('.product-item').data('product-id');
       
@@ -1594,6 +1604,16 @@
         return;
       }
       
+      // Check if user has location/address set
+      const user = window.ECommerceAPI.Auth.getUser();
+      if (!user || !user.address || !user.latitude || !user.longitude) {
+        const confirmSetLocation = confirm('Please set your delivery address and location before proceeding to checkout. Would you like to go to your profile to set it now?');
+        if (confirmSetLocation) {
+          window.location.href = 'edit-profile.html';
+        }
+        return;
+      }
+      
       // Check if cart is empty before proceeding
       try {
         const cart = await window.ECommerceAPI.Cart.get();
@@ -2006,10 +2026,15 @@
     }
   }
   
-  // Search products
-  function searchProducts(query) {
+  // Search products - works for both desktop and mobile
+  function searchProducts(query, isMobile = false) {
+    const resultsContainerId = isMobile ? 'search-results-mobile' : 'search-results';
+    const resultsContainer = document.getElementById(resultsContainerId);
+    
     if (!query || query.trim().length < 2) {
-      document.getElementById('search-results').style.display = 'none';
+      if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+      }
       return;
     }
     
@@ -2020,12 +2045,15 @@
       return name.includes(searchTerm) || description.includes(searchTerm);
     }).slice(0, 5); // Limit to 5 results
     
-    displaySearchResults(filtered);
+    displaySearchResults(filtered, isMobile);
   }
   
-  // Display search results
-  function displaySearchResults(products) {
-    const resultsContainer = document.getElementById('search-results');
+  // Display search results - works for both desktop and mobile
+  function displaySearchResults(products, isMobile = false) {
+    const resultsContainerId = isMobile ? 'search-results-mobile' : 'search-results';
+    const resultsContainer = document.getElementById(resultsContainerId);
+    
+    if (!resultsContainer) return;
     
     if (products.length === 0) {
       resultsContainer.innerHTML = '<div class="p-3 text-muted text-center">No products found</div>';
@@ -2060,11 +2088,50 @@
     resultsContainer.style.display = 'block';
   }
   
-  // Setup search event listeners
+  // Setup search event listeners for both desktop and mobile
   function setupSearch() {
+    // Setup desktop search
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
     
+    if (searchInput) {
+      setupSearchInput(searchInput, searchResults, false);
+    }
+    
+    // Setup mobile search
+    const searchInputMobile = document.getElementById('search-input-mobile');
+    const searchResultsMobile = document.getElementById('search-results-mobile');
+    
+    if (searchInputMobile) {
+      setupSearchInput(searchInputMobile, searchResultsMobile, true);
+    }
+    
+    // Setup form submissions
+    const searchForm = document.getElementById('search-form');
+    if (searchForm) {
+      searchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = searchInput?.value || '';
+        if (query.trim()) {
+          searchProducts(query, false);
+        }
+      });
+    }
+    
+    const searchFormMobile = document.getElementById('search-form-mobile');
+    if (searchFormMobile) {
+      searchFormMobile.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const query = searchInputMobile?.value || '';
+        if (query.trim()) {
+          searchProducts(query, true);
+        }
+      });
+    }
+  }
+  
+  // Helper function to setup individual search input
+  function setupSearchInput(searchInput, searchResults, isMobile) {
     if (!searchInput) return;
     
     // Load products when search input is focused
@@ -2080,28 +2147,57 @@
       const query = e.target.value;
       
       searchTimeout = setTimeout(() => {
-        searchProducts(query);
+        searchProducts(query, isMobile);
       }, 300); // Debounce for 300ms
     });
-    
-    // Hide results when clicking outside
+  }
+  
+  // Setup click-outside handler to close search dropdowns and profile menu
+  function setupClickOutsideHandlers() {
     document.addEventListener('click', (e) => {
-      if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-        searchResults.style.display = 'none';
+      // Get all elements to check
+      const searchInput = document.getElementById('search-input');
+      const searchResults = document.getElementById('search-results');
+      const searchInputMobile = document.getElementById('search-input-mobile');
+      const searchResultsMobile = document.getElementById('search-results-mobile');
+      const userIconLink = document.getElementById('user-icon-link');
+      const userProfileMenu = document.getElementById('user-profile-menu');
+      
+      // Check if click is outside search elements (desktop)
+      if (searchInput && searchResults) {
+        const searchBar = searchInput.closest('.search-bar');
+        if (searchBar && !searchBar.contains(e.target) && !searchResults.contains(e.target)) {
+          searchResults.style.display = 'none';
+        }
+      }
+      
+      // Check if click is outside search elements (mobile)
+      if (searchInputMobile && searchResultsMobile) {
+        const searchBarMobile = searchInputMobile.closest('.search-bar');
+        if (searchBarMobile && !searchBarMobile.contains(e.target) && !searchResultsMobile.contains(e.target)) {
+          searchResultsMobile.style.display = 'none';
+        }
+      }
+      
+      // Check if click is outside profile menu
+      if (userIconLink && userProfileMenu) {
+        const isClickOnIcon = userIconLink === e.target || userIconLink.contains(e.target);
+        const isClickInMenu = userProfileMenu.contains(e.target);
+        
+        if (!isClickOnIcon && !isClickInMenu) {
+          // Close dropdown if it's open
+          try {
+            const dropdown = bootstrap?.Dropdown?.getInstance(userIconLink);
+            if (dropdown) {
+              dropdown.hide();
+            }
+          } catch (e) {
+            // If dropdown instance doesn't exist, just hide the menu
+            userProfileMenu.classList.add('d-none');
+          }
+        }
       }
     });
-    
-    // Prevent form submission
-    const searchForm = document.getElementById('search-form');
-    if (searchForm) {
-      searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = searchInput.value;
-        if (query.trim()) {
-          searchProducts(query);
-        }
-      });
-    }
   }
   
   // Handle search result clicks
@@ -2110,11 +2206,15 @@
     e.stopPropagation();
     const productId = this.getAttribute('data-product-id');
     
-    // Hide search results first
+    // Hide search results first (both desktop and mobile)
     const searchResults = document.getElementById('search-results');
+    const searchResultsMobile = document.getElementById('search-results-mobile');
     const searchInput = document.getElementById('search-input');
+    const searchInputMobile = document.getElementById('search-input-mobile');
     if (searchResults) searchResults.style.display = 'none';
+    if (searchResultsMobile) searchResultsMobile.style.display = 'none';
     if (searchInput) searchInput.value = '';
+    if (searchInputMobile) searchInputMobile.value = '';
     
     // Convert productId to string for comparison
     const searchId = String(productId);
@@ -2316,6 +2416,7 @@
   // Initialize search when DOM is ready
   $(document).ready(function() {
     setupSearch();
+    setupClickOutsideHandlers();
     // Load products for search after a delay
     setTimeout(() => {
       loadProductsForSearch();
