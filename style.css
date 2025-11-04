@@ -950,6 +950,10 @@ footer .footer-menu > img {
   background: rgb(240, 56, 56);
   color: #fff;
 }
+.product-item .btn-wishlist.in-wishlist:hover {
+  background: #fff;
+  color: #e91e63;
+}
 .product-item .qty {
   font-weight: 400;
   font-size: 13px;
