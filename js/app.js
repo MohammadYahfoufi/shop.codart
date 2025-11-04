@@ -843,16 +843,49 @@
           button.className = userIconLink.className;
           button.id = userIconLink.id;
           button.innerHTML = userIconLink.innerHTML;
+          // Copy inline styles
+          if (userIconLink.getAttribute('style')) {
+            button.setAttribute('style', userIconLink.getAttribute('style'));
+          }
+          // Copy hover event handlers
+          if (userIconLink.getAttribute('onmouseover')) {
+            button.setAttribute('onmouseover', userIconLink.getAttribute('onmouseover'));
+          }
+          if (userIconLink.getAttribute('onmouseout')) {
+            button.setAttribute('onmouseout', userIconLink.getAttribute('onmouseout'));
+          }
           button.setAttribute('data-bs-toggle', 'dropdown');
           button.setAttribute('aria-expanded', 'false');
           userIconLink.parentNode.replaceChild(button, userIconLink);
           return updateUserDisplay(); // Recall with new button
         }
         
+        // Remove modal attributes completely to prevent modal from opening
+        // Do this BEFORE setting dropdown attributes to ensure no conflicts
+        userIconLink.removeAttribute('data-bs-target');
+        // Remove and re-add data-bs-toggle to ensure it's set correctly
+        const currentToggle = userIconLink.getAttribute('data-bs-toggle');
+        if (currentToggle === 'modal') {
+          userIconLink.removeAttribute('data-bs-toggle');
+        }
+        
         // Set dropdown attributes
         userIconLink.setAttribute('data-bs-toggle', 'dropdown');
         userIconLink.setAttribute('aria-expanded', 'false');
         userIconLink.setAttribute('title', 'Profile Menu');
+        
+        // Dispose any existing modal instance that might be attached
+        try {
+          const authModal = document.getElementById('authModal');
+          if (authModal) {
+            const modalInstance = bootstrap?.Modal?.getInstance(authModal);
+            if (modalInstance) {
+              modalInstance.hide(); // Ensure modal is closed
+            }
+          }
+        } catch (e) {
+          // Ignore errors
+        }
         
         // Show dropdown menu (it will be shown/hidden by Bootstrap dropdown)
         // Just make sure it's in the DOM and not hidden by our d-none class
@@ -915,6 +948,17 @@
           anchor.className = userIconLink.className.replace('border-0', '');
           anchor.id = userIconLink.id;
           anchor.innerHTML = userIconLink.innerHTML;
+          // Copy inline styles
+          if (userIconLink.getAttribute('style')) {
+            anchor.setAttribute('style', userIconLink.getAttribute('style'));
+          }
+          // Copy hover event handlers
+          if (userIconLink.getAttribute('onmouseover')) {
+            anchor.setAttribute('onmouseover', userIconLink.getAttribute('onmouseover'));
+          }
+          if (userIconLink.getAttribute('onmouseout')) {
+            anchor.setAttribute('onmouseout', userIconLink.getAttribute('onmouseout'));
+          }
           anchor.setAttribute('data-bs-toggle', 'modal');
           anchor.setAttribute('data-bs-target', '#authModal');
           anchor.setAttribute('title', 'Login / Register');
@@ -937,22 +981,33 @@
   // Setup profile dropdown handlers (using event delegation)
   function setupProfileHandlers() {
     // Handle profile icon click - check auth and show appropriate menu
+    // Use capture phase to intercept before Bootstrap's handlers
     document.addEventListener('click', function(e) {
       const userIconLink = document.getElementById('user-icon-link');
       if (!userIconLink) return;
       
       // Check if click is on the profile icon
       if (userIconLink === e.target || userIconLink.contains(e.target)) {
-        e.preventDefault();
-        e.stopPropagation();
+        // ALWAYS check authentication status FIRST before any other action
+        const isAuthenticated = window.ECommerceAPI && window.ECommerceAPI.Auth && window.ECommerceAPI.Auth.isAuthenticated();
         
-        // Check if user is logged in
-        if (window.ECommerceAPI && window.ECommerceAPI.Auth && window.ECommerceAPI.Auth.isAuthenticated()) {
-          // User is logged in - show dropdown menu
-          const userProfileMenu = document.getElementById('user-profile-menu');
+        if (isAuthenticated) {
+          // User is logged in - prevent modal from opening at all costs
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          
+          // Ensure modal attributes are removed immediately before any Bootstrap handlers run
+          userIconLink.removeAttribute('data-bs-target');
+          if (userIconLink.getAttribute('data-bs-toggle') === 'modal') {
+            userIconLink.removeAttribute('data-bs-toggle');
+          }
           
           // Ensure dropdown is set up correctly
           updateUserDisplay();
+          
+          // User is logged in - show dropdown menu
+          const userProfileMenu = document.getElementById('user-profile-menu');
           
           // Show the dropdown menu
           if (userProfileMenu) {
@@ -960,6 +1015,9 @@
             
             // Initialize or toggle Bootstrap dropdown
             setTimeout(() => {
+              // Double-check modal attributes are still removed
+              userIconLink.removeAttribute('data-bs-target');
+              
               let dropdown = bootstrap?.Dropdown?.getInstance(userIconLink);
               if (!dropdown) {
                 try {
@@ -973,16 +1031,27 @@
               }
             }, 10);
           }
+          
+          return false;
         } else {
           // User is not logged in - show login modal
+          // Ensure modal attributes are set
+          if (userIconLink.tagName === 'A') {
+            if (!userIconLink.getAttribute('data-bs-toggle') || userIconLink.getAttribute('data-bs-toggle') !== 'modal') {
+              userIconLink.setAttribute('data-bs-toggle', 'modal');
+              userIconLink.setAttribute('data-bs-target', '#authModal');
+            }
+          }
+          
+          // Don't prevent default - let Bootstrap handle the modal
           const modalElement = document.getElementById('authModal');
           if (modalElement && bootstrap?.Modal) {
             const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
             modal.show();
           }
+          
+          return false;
         }
-        
-        return false;
       }
     }, true);
     
