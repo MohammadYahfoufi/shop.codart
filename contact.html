@@ -134,7 +134,7 @@
         <h3 class="mb-2" style="color: #222; font-weight: 700;">Send us a Message</h3>
         <p class="text-muted">Fill out the form below and we'll get back to you as soon as possible.</p>
       </div>
-      <form onsubmit="event.preventDefault(); alert('Thank you for your message! We will get back to you soon.'); this.reset();">
+      <form id="contact-form">
         <div class="row">
           <div class="col-md-6 mb-3">
             <label for="name" class="form-label fw-semibold" style="color: #222;">Your Name</label>
@@ -260,5 +260,8 @@
   </div>
   
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Load config first (if exists) -->
+  <script src="js/contact-config.js" onerror="console.log('contact-config.js not found - using default config')"></script>
+  <script src="js/contact.js"></script>
 </body>
 </html>
