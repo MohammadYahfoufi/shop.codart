@@ -63,163 +63,20 @@
   </style>
 </head>
 <body>
-  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-    <defs>
-      <symbol xmlns="http://www.w3.org/2000/svg" id="heart" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M20.16 4.61A6.27 6.27 0 0 0 12 4a6.27 6.27 0 0 0-8.16 9.48l7.45 7.45a1 1 0 0 0 1.42 0l7.45-7.45a6.27 6.27 0 0 0 0-8.87Zm-1.41 7.46L12 18.81l-6.75-6.74a4.28 4.28 0 0 1 3-7.3a4.25 4.25 0 0 1 3 1.25a1 1 0 0 0 1.42 0a4.27 4.27 0 0 1 6 6.05Z" />
-      </symbol>
-      <symbol xmlns="http://www.w3.org/2000/svg" id="cart" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M8.5 19a1.5 1.5 0 1 0 1.5 1.5A1.5 1.5 0 0 0 8.5 19ZM19 16H7a1 1 0 0 1 0-2h8.491a3.013 3.013 0 0 0 2.885-2.176l1.585-5.55A1 1 0 0 0 19 5H6.74a3.007 3.007 0 0 0-2.82-2H3a1 1 0 0 0 0 2h.921a1.005 1.005 0 0 1 .962.725l.155.545v.005l1.641 5.742A3 3 0 0 0 7 18h12a1 1 0 0 0 0-2Zm-1.326-9l-1.22 4.274a1.005 1.005 0 0 1-.963.726H8.754l-.255-.892L7.326 7ZM16.5 19a1.5 1.5 0 1 0 1.5 1.5a1.5 1.5 0 0 0-1.5-1.5Z" />
-      </symbol>
-      <symbol xmlns="http://www.w3.org/2000/svg" id="user" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M15.71 12.71a6 6 0 1 0-7.42 0a10 10 0 0 0-6.22 8.18a1 1 0 0 0 2 .22a8 8 0 0 1 15.9 0a1 1 0 0 0 1 .89h.11a1 1 0 0 0 .88-1.1a10 10 0 0 0-6.25-8.19ZM12 12a4 4 0 1 1 4-4a4 4 0 0 1-4 4Z" />
-      </symbol>
-      <symbol xmlns="http://www.w3.org/2000/svg" id="edit" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M21 12a1 1 0 0 0-1 1v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h6a1 1 0 0 0 0-2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-6a1 1 0 0 0-1-1Z" />
-        <path fill="currentColor" d="M21.71 2.29a1 1 0 0 0-1.42 0l-8 8a1 1 0 0 0-.21.33l-2 5a1 1 0 0 0 .76 1.29a1 1 0 0 0 .26 0a1 1 0 0 0 .91-.63l2-5a1 1 0 0 0 .08-.22l8-8a1 1 0 0 0 0-1.42ZM13.83 10.79l6.38-6.38l1.42 1.42l-6.38 6.38l-1.84.46Z" />
-      </symbol>
-      <symbol xmlns="http://www.w3.org/2000/svg" id="logout" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M4 12a1 1 0 0 0 1 1h7.59l-2.3 2.29a1 1 0 0 0 0 1.42a1 1 0 0 0 1.42 0l4-4a1 1 0 0 0 0-1.42l-4-4a1 1 0 1 0-1.42 1.42l2.3 2.29H5a1 1 0 0 0-1 1Z" />
-        <path fill="currentColor" d="M17 2H7a3 3 0 0 0-3 3v3a1 1 0 0 0 2 0V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-3a1 1 0 0 0-2 0v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3Z" />
-      </symbol>
-      <symbol xmlns="http://www.w3.org/2000/svg" id="search" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
-      </symbol>
-    </defs>
-  </svg>
-
-  <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="offcanvasCart" aria-labelledby="My Cart">
-    <div class="offcanvas-header justify-content-center">
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-      <div class="order-md-last">
-        <h4 class="d-flex justify-content-between align-items-center mb-3">
-          <span class="text-primary">Your cart</span>
-          <span class="badge bg-primary rounded-pill" id="cart-badge-count">0</span>
-        </h4>
-        <div id="cart-items-container">
-          <div class="text-center text-muted py-5">
-            <p>Your cart is empty</p>
-          </div>
-        </div>
+  <div class="page-header">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-center">
+        <a href="index.html" class="text-decoration-none d-inline-flex align-items-center gap-2" style="color: #4A9EFF; font-weight: 500;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fill="currentColor" d="M9 12l6-6-1.41-1.41L6 12l7.59 7.59L15 18l-6-6z"/>
+          </svg>
+          <span>Back to Home</span>
+        </a>
+        <h4 class="mb-0" style="color: #222;">Privacy Policy</h4>
+        <div style="width: 100px;"></div>
       </div>
     </div>
   </div>
-
-  <header style="background: #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 1000;">
-    <div class="container-fluid">
-      <div class="row align-items-center py-3">
-        <div class="col-sm-4 col-lg-3 text-center text-sm-start">
-          <div class="main-logo">
-            <a href="index.html" style="text-decoration: none;">
-              <img src="images/codart1.png" alt="Codart Shop" class="img-fluid" style="max-height: 70px;">
-            </a>
-          </div>
-        </div>
-        <div class="col-sm-6 offset-sm-2 offset-md-0 col-lg-5 d-none d-lg-block">
-          <div class="search-bar" style="background: #f8f9fa; border-radius: 50px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; border: 1px solid #e9ecef; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4A9EFF'; this.style.boxShadow='0 0 0 3px rgba(74, 158, 255, 0.1)'" onmouseout="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
-            <div class="flex-grow-1 position-relative">
-              <form id="search-form" class="w-100 m-0" action="index.html" method="post">
-                <input type="text" id="search-input" class="form-control border-0 bg-transparent" placeholder="Search for products..." autocomplete="off" style="font-size: 14px; padding: 0;" />
-              </form>
-              <div id="search-results" class="position-absolute top-100 start-0 w-100 bg-white border rounded shadow-lg mt-2" style="display: none; z-index: 1000; max-height: 400px; overflow-y: auto; border-radius: 12px;">
-              </div>
-            </div>
-            <button type="submit" form="search-form" class="bg-transparent border-0 p-0" style="color: #4A9EFF; cursor: pointer;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="col-12 d-lg-none mb-3">
-          <div class="search-bar" style="background: #f8f9fa; border-radius: 50px; padding: 8px 16px; display: flex; align-items: center; gap: 8px; border: 1px solid #e9ecef; transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4A9EFF'; this.style.boxShadow='0 0 0 3px rgba(74, 158, 255, 0.1)'" onmouseout="this.style.borderColor='#e9ecef'; this.style.boxShadow='none'">
-            <div class="flex-grow-1 position-relative">
-              <form id="search-form-mobile" class="w-100 m-0" action="index.html" method="post">
-                <input type="text" id="search-input-mobile" class="form-control border-0 bg-transparent" placeholder="Search for products..." autocomplete="off" style="font-size: 14px; padding: 0;" />
-              </form>
-              <div id="search-results-mobile" class="position-absolute top-100 start-0 w-100 bg-white border rounded shadow-lg mt-2" style="display: none; z-index: 1000; max-height: 400px; overflow-y: auto; border-radius: 12px;">
-              </div>
-            </div>
-            <button type="submit" form="search-form-mobile" class="bg-transparent border-0 p-0" style="color: #4A9EFF; cursor: pointer;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68a1 1 0 0 0 1.42 0a1 1 0 0 0 0-1.39ZM11 18a7 7 0 1 1 7-7a7 7 0 0 1-7 7Z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="col-sm-8 col-lg-4 d-flex justify-content-end gap-4 align-items-center mt-4 mt-sm-0 justify-content-center justify-content-sm-end">
-          <div class="support-box text-end d-none d-xl-block" style="padding-right: 20px; border-right: 1px solid #e9ecef;">
-            <span class="fs-6" style="color: #6c757d; font-size: 12px !important; display: block;">For Support</span>
-            <a href="tel:+96170031455" class="text-decoration-none" style="color: #212529; font-weight: 600; font-size: 14px;">+961 70031455</a>
-          </div>
-          <ul class="d-flex justify-content-end list-unstyled m-0 align-items-center gap-2">
-            <li class="dropdown">
-              <button type="button" class="rounded-circle border-0 p-2" id="user-icon-link" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
-                <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
-                  <use xlink:href="#user"></use>
-                </svg>
-              </button>
-              <ul class="dropdown-menu dropdown-menu-end d-none" id="user-profile-menu" aria-labelledby="user-icon-link">
-                <li>
-                  <a class="dropdown-item" href="edit-profile.html" id="edit-profile-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <use xlink:href="#edit"></use>
-                    </svg>
-                    <span>Edit Profile</span>
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="orders.html">
-                    <span>My Orders</span>
-                  </a>
-                </li>
-                <li>
-                  <hr class="dropdown-divider">
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#" id="logout-btn-dropdown">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <use xlink:href="#logout"></use>
-                    </svg>
-                    <span>Logout</span>
-                  </a>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a href="wishlist.html" class="rounded-circle border-0 p-2" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; text-decoration: none;" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
-                <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
-                  <use xlink:href="#heart"></use>
-                </svg>
-              </a>
-            </li>
-            <li class="d-lg-none">
-              <a href="#" class="rounded-circle border-0 p-2" style="background: #f8f9fa; transition: all 0.3s ease; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; text-decoration: none;" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" onmouseover="this.style.background='#e9ecef'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='#f8f9fa'; this.style.transform='scale(1)'">
-                <svg width="20" height="20" viewBox="0 0 24 24" style="color: #495057;">
-                  <use xlink:href="#cart"></use>
-                </svg>
-              </a>
-            </li>
-          </ul>
-          <div class="cart text-end d-none d-lg-block dropdown">
-            <button class="border-0 bg-transparent d-flex align-items-center gap-2 lh-1 p-2 rounded" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart" aria-controls="offcanvasCart" style="transition: all 0.3s ease; min-width: 100px;" onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='transparent'">
-              <div class="d-flex flex-column gap-1">
-                <span class="fs-6 d-flex align-items-center gap-1" style="color: #6c757d; font-size: 12px !important; font-weight: 500;">
-                  Your Cart
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-top: 2px;">
-                    <path d="M6 9L1 4H11L6 9Z" fill="currentColor" />
-                  </svg>
-                </span>
-                <span class="cart-total fw-bold" id="cart-total-header" style="color: #4A9EFF; font-size: 16px;">$0.00</span>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
 
   <div class="container py-5" style="max-width: 900px;">
     <div class="text-center mb-5">
@@ -387,9 +244,6 @@
               <li class="menu-item" style="margin-bottom: 0.75rem;">
                 <a href="terms-conditions.html" class="nav-link" style="color: #6c757d; text-decoration: none;">Terms & Conditions</a>
               </li>
-              <li class="menu-item" style="margin-bottom: 0.75rem;">
-                <a href="track-order.html" class="nav-link" style="color: #6c757d; text-decoration: none;">Track Order</a>
-              </li>
             </ul>
           </div>
         </div>
@@ -416,10 +270,6 @@
     </div>
   </div>
   
-  <script src="js/jquery-1.11.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/plugins.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/app.js"></script>
 </body>
 </html>
