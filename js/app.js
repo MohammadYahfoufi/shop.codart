@@ -146,10 +146,6 @@
               </figure>
               <h3>${product.name || 'Product Name'}</h3>
               <span class="qty">${product.quantity || '1'} ${product.unit || 'Unit'}</span>
-              <span class="rating">
-                <svg width="24" height="24" class="text-primary"><use xlink:href="#star-solid"></use></svg>
-                ${product.rating || '4.5'}
-              </span>
               <span class="price">$${price.toFixed(2)}</span>
               <div class="d-flex align-items-center justify-content-between">
                 <div class="input-group product-qty">

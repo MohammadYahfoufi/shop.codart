@@ -175,10 +175,6 @@
           <h3>${product.name || 'Product Name'}</h3>
           ${product.description ? `<p class="text-muted small">${product.description.substring(0, 60)}...</p>` : ''}
           <span class="qty">${product.quantity || '1'} ${product.unit || 'Unit'}</span>
-          <span class="rating">
-            <svg width="24" height="24" class="text-primary"><use xlink:href="#star-solid"></use></svg>
-            ${product.rating || '4.5'}
-          </span>
           <span class="price">$${price.toFixed(2)}</span>
           ${discount > 0 ? `<span class="old-price text-muted text-decoration-line-through">$${(price + discount).toFixed(2)}</span>` : ''}
           <div class="d-flex align-items-center justify-content-between mt-2">
