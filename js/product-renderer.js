@@ -10,11 +10,11 @@ const ProductRenderer = {
   renderProduct: (product, container) => {
     // Default image if product doesn't have one
     const defaultImage = 'images/powerbank.png';
-    const productImage = product.image || product.images?.[0] || defaultImage;
+    const productImage = product.imageUrl || defaultImage;
     const price = product.price || 0;
     const discount = product.discount || 0;
     const discountPercentage = discount > 0 ? Math.round((discount / (price + discount)) * 100) : 0;
-    
+
     const productCard = `
       <div class="col">
         <div class="product-item" data-product-id="${product.id}">
@@ -53,14 +53,14 @@ const ProductRenderer = {
         </div>
       </div>
     `;
-    
+
     if (container) {
       container.insertAdjacentHTML('beforeend', productCard);
     }
-    
+
     return productCard;
   },
-  
+
   /**
    * Render multiple products
    */
@@ -70,25 +70,25 @@ const ProductRenderer = {
       console.error(`Container not found: ${containerSelector}`);
       return;
     }
-    
+
     // Clear existing products (optional, depends on use case)
     // container.innerHTML = '';
-    
+
     if (!products || products.length === 0) {
       container.innerHTML = '<div class="col-12"><p class="text-center text-muted">No products found.</p></div>';
       return;
     }
-    
+
     products.forEach(product => {
       this.renderProduct(product, container);
     });
-    
+
     // Reinitialize product quantity controls for new products
     if (window.initProductQty) {
       window.initProductQty();
     }
   },
-  
+
   /**
    * Render products in a swiper carousel
    */
@@ -98,22 +98,22 @@ const ProductRenderer = {
       console.error(`Swiper wrapper not found: ${swiperSelector}`);
       return;
     }
-    
+
     if (!products || products.length === 0) {
       swiperWrapper.innerHTML = '<div class="swiper-slide"><p class="text-center text-muted">No products found.</p></div>';
       return;
     }
-    
+
     products.forEach(product => {
       const defaultImage = 'images/powerbank.png';
-      const productImage = product.image || product.images?.[0] || defaultImage;
+      const productImage = product.imageUrl || defaultImage;
       const price = product.price || 0;
       const discount = product.discount || 0;
-      
+
       const slide = document.createElement('div');
       slide.className = 'product-item swiper-slide';
       slide.setAttribute('data-product-id', product.id);
-      
+
       slide.innerHTML = `
         <a href="#" class="btn-wishlist" data-product-id="${product.id}">
           <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
@@ -145,20 +145,20 @@ const ProductRenderer = {
           </a>
         </div>
       `;
-      
+
       swiperWrapper.appendChild(slide);
     });
   },
-  
+
   /**
    * Get appropriate icon for category based on name
    * Uses Photoroom icons from icons folder
    */
   getCategoryIcon: (categoryName) => {
     if (!categoryName) return 'images/icons/electronics-Photoroom.png';
-    
+
     const name = categoryName.toLowerCase();
-    
+
     // Map category names to Photoroom icons
     if (name.includes('phone') && name.includes('case')) {
       return 'images/icons/phone%20cases-Photoroom.png';
@@ -184,15 +184,15 @@ const ProductRenderer = {
       return 'images/icons/electronics-Photoroom.png';
     }
   },
-  
+
   /**
    * Get fallback icon based on category name (uses Photoroom icons or existing images)
    */
   getFallbackIcon: (categoryName) => {
     if (!categoryName) return 'images/icons/electronics-Photoroom.png';
-    
+
     const name = categoryName.toLowerCase();
-    
+
     // Use Photoroom icons as fallbacks
     if (name.includes('charger') || name.includes('charging') || name.includes('power')) {
       return 'images/icons/phone%20charger-Photoroom.png';
@@ -220,11 +220,11 @@ const ProductRenderer = {
       console.error(`Container not found: ${containerSelector}`);
       return;
     }
-    
+
     if (!categories || categories.length === 0) {
       return;
     }
-    
+
     categories.forEach(category => {
       const categoryIcon = category.image || ProductRenderer.getCategoryIcon(category.name);
       const fallbackIcon = ProductRenderer.getFallbackIcon(category.name);
