@@ -151,8 +151,12 @@
    * Create a product card for wishlist item
    */
   function createWishlistProductCard(product) {
-    const defaultImage = 'images/powerbank.png';
-    const productImage = product.imageUrl  || defaultImage;
+    const defaultImage = '/images/powerbank.png';
+    // Ensure image URL is absolute (starts with /) for Vercel compatibility
+    let productImage = product.imageUrl || defaultImage;
+    if (productImage && !productImage.startsWith('/') && !productImage.startsWith('http://') && !productImage.startsWith('https://')) {
+      productImage = '/' + productImage;
+    }
     const price = product.price || 0;
     const discount = product.discount || 0;
     const discountPercentage = discount > 0 ? Math.round((discount / (price + discount)) * 100) : 0;

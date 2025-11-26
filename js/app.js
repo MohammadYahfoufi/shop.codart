@@ -1849,7 +1849,7 @@
             cartItemsHTML.push(`
               <li class="list-group-item d-flex justify-content-between align-items-start" data-cart-item-id="${cartItemId}" data-product-id="${productIdValue}">
                 <div class="flex-grow-1 d-flex gap-3">
-                  <img src="${productImage}" alt="${productName}" class="rounded" style="width: 60px; height: 60px; object-fit: cover;" onerror="this.src='images/powerbank.png'">
+                  <img src="${productImage}" alt="${productName}" class="rounded" style="width: 60px; height: 60px; object-fit: cover;" onerror="this.src='/images/powerbank.png'">
                   <div class="flex-grow-1">
                     <h6 class="my-0 mb-1">${productName}</h6>
                     <small class="text-body-secondary d-block mb-2">$${price.toFixed(2)} each</small>
