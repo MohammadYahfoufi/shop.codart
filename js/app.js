@@ -130,7 +130,7 @@
           // Render first 6-10 products directly in carousel
           const carouselProducts = products.slice(0, Math.min(10, products.length));
           carouselProducts.forEach(product => {
-            const defaultImage = 'images/powerbank.png';
+            const defaultImage = '/images/powerbank.png';
             const productImage = product.imageUrl  || defaultImage;
             const price = product.price || 0;
             const discount = product.discount || 0;
@@ -397,7 +397,7 @@
             // Get Photoroom icon path
             const photoroomIcon = category.image || (window.ProductRenderer ? window.ProductRenderer.getCategoryIcon(category.name) : null);
             // Get fallback icon (Photoroom icons)
-            const fallbackIcon = window.ProductRenderer ? window.ProductRenderer.getFallbackIcon(category.name) : 'images/icons/electronics-Photoroom.png';
+            const fallbackIcon = window.ProductRenderer ? window.ProductRenderer.getFallbackIcon(category.name) : '/images/icons/electronics-Photoroom.png';
             
             // Use Photoroom icon if available, otherwise use fallback
             const iconSrc = photoroomIcon || fallbackIcon;
@@ -1243,7 +1243,7 @@
               description: description || `${productName} - Available now`,
               price: price,
               stock: 100,
-              imageUrl: imageSrc || 'images/powerbank.png',
+              imageUrl: imageSrc || '/images/powerbank.png',
               categoryId: '' // You might want to set a default category
             };
             
@@ -1844,7 +1844,7 @@
             // Get cartItemId - required for remove/update operations
             const cartItemId = item.id || item.cartItemId || item._id;
             
-            const productImage = product.imageUrl  || 'images/powerbank.png';
+            const productImage = product.imageUrl  || '/images/powerbank.png';
             
             cartItemsHTML.push(`
               <li class="list-group-item d-flex justify-content-between align-items-start" data-cart-item-id="${cartItemId}" data-product-id="${productIdValue}">
@@ -2122,7 +2122,7 @@
     }
     
     resultsContainer.innerHTML = products.map(product => {
-      const productImage = product.imageUrl|| 'images/powerbank.png';
+      const productImage = product.imageUrl|| '/images/powerbank.png';
       const price = product.price || 0;
       const productName = product.name || 'Product';
       const productId = product.id || product._id;
@@ -2135,7 +2135,7 @@
           <div class="d-flex align-items-center gap-3">
             <img src="${productImage}" alt="${productName}" 
                  style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" 
-                 onerror="this.src='images/powerbank.png'">
+                 onerror="this.src='/images/powerbank.png'">
             <div class="flex-grow-1">
               <h6 class="mb-1" style="font-size: 14px; font-weight: 600;">${productName}</h6>
               <p class="mb-0 text-primary fw-bold" style="font-size: 14px;">$${price.toFixed(2)}</p>

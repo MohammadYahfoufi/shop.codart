@@ -9,8 +9,12 @@ const ProductRenderer = {
    */
   renderProduct: (product, container) => {
     // Default image if product doesn't have one
-    const defaultImage = 'images/powerbank.png';
-    const productImage = product.imageUrl || defaultImage;
+    const defaultImage = '/images/powerbank.png';
+    // Ensure image URL is absolute (starts with /) for Vercel compatibility
+    let productImage = product.imageUrl || defaultImage;
+    if (productImage && !productImage.startsWith('/') && !productImage.startsWith('http://') && !productImage.startsWith('https://')) {
+      productImage = '/' + productImage;
+    }
     const price = product.price || 0;
     const discount = product.discount || 0;
     const discountPercentage = discount > 0 ? Math.round((discount / (price + discount)) * 100) : 0;
@@ -105,8 +109,12 @@ const ProductRenderer = {
     }
 
     products.forEach(product => {
-      const defaultImage = 'images/powerbank.png';
-      const productImage = product.imageUrl || defaultImage;
+      const defaultImage = '/images/powerbank.png';
+      // Ensure image URL is absolute (starts with /) for Vercel compatibility
+      let productImage = product.imageUrl || defaultImage;
+      if (productImage && !productImage.startsWith('/') && !productImage.startsWith('http://') && !productImage.startsWith('https://')) {
+        productImage = '/' + productImage;
+      }
       const price = product.price || 0;
       const discount = product.discount || 0;
 
@@ -155,33 +163,33 @@ const ProductRenderer = {
    * Uses Photoroom icons from icons folder
    */
   getCategoryIcon: (categoryName) => {
-    if (!categoryName) return 'images/icons/electronics-Photoroom.png';
+    if (!categoryName) return '/images/icons/electronics-Photoroom.png';
 
     const name = categoryName.toLowerCase();
 
     // Map category names to Photoroom icons
     if (name.includes('phone') && name.includes('case')) {
-      return 'images/icons/phone%20cases-Photoroom.png';
+      return '/images/icons/phone%20cases-Photoroom.png';
     } else if (name.includes('charger') || name.includes('charging') || name.includes('power')) {
-      return 'images/icons/phone%20charger-Photoroom.png';
+      return '/images/icons/phone%20charger-Photoroom.png';
     } else if (name.includes('watch') || name.includes('smartwatch')) {
-      return 'images/icons/smart%20watches-Photoroom.png';
+      return '/images/icons/smart%20watches-Photoroom.png';
     } else if (name.includes('accessories') || name.includes('accessory')) {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     } else if (name.includes('phone')) {
-      return 'images/icons/phone%20cases-Photoroom.png';
+      return '/images/icons/phone%20cases-Photoroom.png';
     } else if (name.includes('device') || name.includes('gadget') || name.includes('electronics')) {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     } else if (name.includes('audio') || name.includes('headphone') || name.includes('headset') || name.includes('speaker')) {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     } else if (name.includes('cable') || name.includes('wire')) {
-      return 'images/icons/phone%20charger-Photoroom.png';
+      return '/images/icons/phone%20charger-Photoroom.png';
     } else if (name.includes('book')) {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     } else if (name.includes('car')) {
-      return 'images/icons/car%20accessories-Photoroom.png';
+      return '/images/icons/car%20accessories-Photoroom.png';
     } else {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     }
   },
 
@@ -189,25 +197,25 @@ const ProductRenderer = {
    * Get fallback icon based on category name (uses Photoroom icons or existing images)
    */
   getFallbackIcon: (categoryName) => {
-    if (!categoryName) return 'images/icons/electronics-Photoroom.png';
+    if (!categoryName) return '/images/icons/electronics-Photoroom.png';
 
     const name = categoryName.toLowerCase();
 
     // Use Photoroom icons as fallbacks
     if (name.includes('charger') || name.includes('charging') || name.includes('power')) {
-      return 'images/icons/phone%20charger-Photoroom.png';
+      return '/images/icons/phone%20charger-Photoroom.png';
     } else if (name.includes('audio') || name.includes('headphone') || name.includes('headset') || name.includes('speaker')) {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     } else if (name.includes('accessories') || name.includes('accessory')) {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     } else if (name.includes('phone') || name.includes('case')) {
-      return 'images/icons/phone%20cases-Photoroom.png';
+      return '/images/icons/phone%20cases-Photoroom.png';
     } else if (name.includes('watch') || name.includes('smartwatch')) {
-      return 'images/icons/smart%20watches-Photoroom.png';
+      return '/images/icons/smart%20watches-Photoroom.png';
     } else if (name.includes('car')) {
-      return 'images/icons/car%20accessories-Photoroom.png';
+      return '/images/icons/car%20accessories-Photoroom.png';
     } else {
-      return 'images/icons/electronics-Photoroom.png';
+      return '/images/icons/electronics-Photoroom.png';
     }
   },
 
