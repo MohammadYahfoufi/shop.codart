@@ -22,19 +22,36 @@
 	}
 
   var initSwiper = function() {
+    // Check if Swiper library is loaded
+    if (typeof Swiper === 'undefined') {
+      console.error('Swiper library is not loaded');
+      return;
+    }
 
-    var swiper = new Swiper(".main-swiper", {
-      speed: 500,
-      autoplay: {
-        delay: 4000,
-        disableOnInteraction: false,
-      },
-      loop: true,
-      pagination: {
-        el: ".swiper-pagination",
-        clickable: true,
-      },
-    });
+    // Check if main-swiper element exists
+    var mainSwiperEl = document.querySelector(".main-swiper");
+    if (!mainSwiperEl) {
+      console.error('Main swiper element not found');
+      return;
+    }
+
+    try {
+      var swiper = new Swiper(".main-swiper", {
+        speed: 500,
+        autoplay: {
+          delay: 4000,
+          disableOnInteraction: false,
+        },
+        loop: true,
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+      });
+      console.log('Main swiper initialized successfully');
+    } catch (error) {
+      console.error('Error initializing main swiper:', error);
+    }
 
     // Don't initialize category carousel here - it will be initialized after categories are loaded from API
     // The category carousel will be initialized in app.js after categories are fetched
