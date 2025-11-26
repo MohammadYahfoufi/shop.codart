@@ -728,6 +728,77 @@
     updateUserDisplay();
   }
 
+  /**
+   * Setup password visibility toggle buttons
+   */
+  function setupPasswordToggles() {
+    // Login password toggle
+    const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginPasswordEye = document.getElementById('loginPasswordEye');
+    const loginPasswordEyeSlash = document.getElementById('loginPasswordEyeSlash');
+    
+    if (toggleLoginPassword && loginPassword) {
+      toggleLoginPassword.addEventListener('click', function(e) {
+        e.preventDefault();
+        const type = loginPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+        loginPassword.setAttribute('type', type);
+        
+        if (type === 'text') {
+          loginPasswordEye.style.display = 'none';
+          loginPasswordEyeSlash.style.display = 'block';
+        } else {
+          loginPasswordEye.style.display = 'block';
+          loginPasswordEyeSlash.style.display = 'none';
+        }
+      });
+    }
+    
+    // Register password toggle
+    const toggleRegisterPassword = document.getElementById('toggleRegisterPassword');
+    const registerPassword = document.getElementById('registerPassword');
+    const registerPasswordEye = document.getElementById('registerPasswordEye');
+    const registerPasswordEyeSlash = document.getElementById('registerPasswordEyeSlash');
+    
+    if (toggleRegisterPassword && registerPassword) {
+      toggleRegisterPassword.addEventListener('click', function(e) {
+        e.preventDefault();
+        const type = registerPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+        registerPassword.setAttribute('type', type);
+        
+        if (type === 'text') {
+          registerPasswordEye.style.display = 'none';
+          registerPasswordEyeSlash.style.display = 'block';
+        } else {
+          registerPasswordEye.style.display = 'block';
+          registerPasswordEyeSlash.style.display = 'none';
+        }
+      });
+    }
+    
+    // Register confirm password toggle
+    const toggleRegisterConfirmPassword = document.getElementById('toggleRegisterConfirmPassword');
+    const registerConfirmPassword = document.getElementById('registerConfirmPassword');
+    const registerConfirmPasswordEye = document.getElementById('registerConfirmPasswordEye');
+    const registerConfirmPasswordEyeSlash = document.getElementById('registerConfirmPasswordEyeSlash');
+    
+    if (toggleRegisterConfirmPassword && registerConfirmPassword) {
+      toggleRegisterConfirmPassword.addEventListener('click', function(e) {
+        e.preventDefault();
+        const type = registerConfirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+        registerConfirmPassword.setAttribute('type', type);
+        
+        if (type === 'text') {
+          registerConfirmPasswordEye.style.display = 'none';
+          registerConfirmPasswordEyeSlash.style.display = 'block';
+        } else {
+          registerConfirmPasswordEye.style.display = 'block';
+          registerConfirmPasswordEyeSlash.style.display = 'none';
+        }
+      });
+    }
+  }
+
   // Check authentication status on page load
   async function checkAuthOnLoad() {
     try {
@@ -1036,6 +1107,9 @@
   function setupEventHandlers() {
     // Setup authentication handlers
     setupAuthHandlers();
+    
+    // Setup password visibility toggles
+    setupPasswordToggles();
     // Add to cart buttons - handles both API products and static template products
     $(document).on('click', '.add-to-cart-btn, .nav-link:contains("Add to Cart")', async function(e) {
       e.preventDefault();
