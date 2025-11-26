@@ -127,7 +127,7 @@
           const carouselProducts = products.slice(0, Math.min(10, products.length));
           carouselProducts.forEach(product => {
             const defaultImage = 'images/powerbank.png';
-            const productImage = product.image || product.images?.[0] || defaultImage;
+            const productImage = product.imageUrl  || defaultImage;
             const price = product.price || 0;
             const discount = product.discount || 0;
             
@@ -1780,7 +1780,7 @@
             // Get cartItemId - required for remove/update operations
             const cartItemId = item.id || item.cartItemId || item._id;
             
-            const productImage = product.image || product.images?.[0] || product.imageUrl || 'images/powerbank.png';
+            const productImage = product.imageUrl  || 'images/powerbank.png';
             
             cartItemsHTML.push(`
               <li class="list-group-item d-flex justify-content-between align-items-start" data-cart-item-id="${cartItemId}" data-product-id="${productIdValue}">
@@ -2058,7 +2058,7 @@
     }
     
     resultsContainer.innerHTML = products.map(product => {
-      const productImage = product.image || product.images?.[0] || 'images/powerbank.png';
+      const productImage = product.imageUrl|| 'images/powerbank.png';
       const price = product.price || 0;
       const productName = product.name || 'Product';
       const productId = product.id || product._id;
