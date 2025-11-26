@@ -1070,10 +1070,29 @@
       
       if (user) {
         const hasAddress = user.address && typeof user.address === 'string' && user.address.trim().length > 0;
-        const hasLatitude = user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
-        const hasLongitude = user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
         
-        if (!hasAddress || !hasLatitude || !hasLongitude) {
+        // Check for coordinates - API stores them as a string "lat,lng" or as separate latitude/longitude fields
+        let hasValidCoordinates = false;
+        if (user.coordinates && typeof user.coordinates === 'string') {
+          const coords = user.coordinates.split(',');
+          if (coords.length >= 2) {
+            const lat = parseFloat(coords[0].trim());
+            const lng = parseFloat(coords[1].trim());
+            if (!isNaN(lat) && !isNaN(lng)) {
+              hasValidCoordinates = true;
+            }
+          }
+        }
+        // Also check for separate latitude/longitude fields (backward compatibility)
+        if (!hasValidCoordinates) {
+          const hasLatitude = user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
+          const hasLongitude = user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
+          if (hasLatitude && hasLongitude) {
+            hasValidCoordinates = true;
+          }
+        }
+        
+        if (!hasAddress || !hasValidCoordinates) {
           const setLocationNow = confirm('You haven\'t set your delivery address yet. You will need to set it before checkout.\n\nClick OK to set your address now, or Cancel to continue adding to cart.');
           if (setLocationNow) {
             window.location.href = 'edit-profile.html';
@@ -1615,19 +1634,45 @@
         user = window.ECommerceAPI.Auth.getUser();
       }
       
-      // Check if user has location/address set
+      // Check if user has location/address set in API
       // Check for address as a non-empty string and valid coordinates
       const hasAddress = user && user.address && typeof user.address === 'string' && user.address.trim().length > 0;
-      const hasLatitude = user && user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
-      const hasLongitude = user && user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
       
-      if (!user || !hasAddress || !hasLatitude || !hasLongitude) {
+      // Check for coordinates - API stores them as a string "lat,lng" or as separate latitude/longitude fields
+      let hasValidCoordinates = false;
+      if (user) {
+        // Check if coordinates exist as a string (format: "lat,lng")
+        if (user.coordinates && typeof user.coordinates === 'string') {
+          const coords = user.coordinates.split(',');
+          if (coords.length >= 2) {
+            const lat = parseFloat(coords[0].trim());
+            const lng = parseFloat(coords[1].trim());
+            if (!isNaN(lat) && !isNaN(lng)) {
+              hasValidCoordinates = true;
+            }
+          }
+        }
+        // Also check for separate latitude/longitude fields (backward compatibility)
+        if (!hasValidCoordinates) {
+          const hasLatitude = user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
+          const hasLongitude = user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
+          if (hasLatitude && hasLongitude) {
+            hasValidCoordinates = true;
+          }
+        }
+      }
+      
+      // If address and coordinates are present, proceed with checkout silently
+      // Only show alert if they're missing
+      if (!user || !hasAddress || !hasValidCoordinates) {
         const confirmSetLocation = confirm('Please set your delivery address and location before proceeding to checkout. Would you like to go to your profile to set it now?');
         if (confirmSetLocation) {
           window.location.href = 'edit-profile.html';
         }
         return;
       }
+      
+      // Address and coordinates are present - proceed with checkout (no alert)
       
       // Check if cart is empty before proceeding
       try {
