@@ -35,6 +35,9 @@
       // Setup profile handlers
       setupProfileHandlers();
       
+      // Check authentication status on page load
+      checkAuthOnLoad();
+      
       // Update user display on page load
       updateUserDisplay();
       
@@ -49,6 +52,7 @@
 
   // Wishlist state management
   let wishlistItems = new Set(); // Store product IDs in wishlist
+  let wishlistOperationsInProgress = new Set(); // Track ongoing wishlist operations to prevent race conditions
   
   // Retry configuration
   const MAX_RETRIES = 3;
@@ -489,9 +493,27 @@
     if (loginForm) {
       loginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
+        
+        const emailInput = document.getElementById('loginEmail');
+        const passwordInput = document.getElementById('loginPassword');
+        const submitButton = loginForm.querySelector('button[type="submit"]');
         const errorDiv = document.getElementById('loginError');
+        
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        
+        // Validate input
+        if (!email || !password) {
+          errorDiv.textContent = 'Please enter both email and password.';
+          errorDiv.classList.remove('d-none');
+          return;
+        }
+        
+        if (!email.includes('@')) {
+          errorDiv.textContent = 'Please enter a valid email address.';
+          errorDiv.classList.remove('d-none');
+          return;
+        }
         
         if (!window.ECommerceAPI || !window.ECommerceAPI.Auth) {
           errorDiv.textContent = 'Authentication service not available. Please refresh the page.';
@@ -499,211 +521,100 @@
           return;
         }
         
+        // Show loading state
+        const originalButtonText = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Logging in...';
+        errorDiv.classList.add('d-none');
+        errorDiv.textContent = '';
+        
         try {
-          // Clear previous errors
-          errorDiv.classList.add('d-none');
-          errorDiv.textContent = '';
-          
+          // Attempt login
           const response = await window.ECommerceAPI.Auth.login({ email, password });
           
-          // Log response for debugging
-          console.log('Login response:', response);
+          // Check if login was successful (response.authenticated indicates success)
+          const isAuthenticated = response?.authenticated || window.ECommerceAPI.Auth.isAuthenticated();
           
-          // Check various response formats - API might return different structures
-          const tokenInResponse = response && (
-            response.accessToken || 
-            response.token || 
-            response.data?.accessToken ||
-            response.data?.token
-          );
-          
-          const userInResponse = response && (
-            response.user || 
-            response.data?.user ||
-            response.data
-          );
-          
-          // Check if token was actually saved (most reliable check)
-          const tokenSaved = window.ECommerceAPI.TokenManager.getToken();
-          const userSaved = window.ECommerceAPI.Auth.getUser();
-          const isAuthenticated = window.ECommerceAPI.Auth.isAuthenticated();
-          
-          console.log('Auth check:', {
-            tokenInResponse,
-            tokenSaved,
-            userInResponse,
-            userSaved,
-            isAuthenticated
-          });
-          
-          // Login successful if we have ANY indication of success
-          // Check if response exists (not null/undefined) - means API call succeeded
-          if (response) {
-            // Check if token was saved during API call (most reliable)
-            const tokenWasSaved = response._tokenSaved || tokenSaved || isAuthenticated;
-            
-            // If we have a token anywhere, save it and proceed
-            if (tokenInResponse || tokenWasSaved || isAuthenticated) {
-              // Wait a moment for token to be stored
-              await new Promise(resolve => setTimeout(resolve, 150));
-              
-              // Double check authentication after wait
-              const finalAuthCheck = window.ECommerceAPI.Auth.isAuthenticated();
-              
-              if (finalAuthCheck || tokenSaved || tokenInResponse) {
-                // Close modal - try multiple methods
-                const authModalEl = document.getElementById('authModal');
-                if (authModalEl) {
-                  // Try Bootstrap 5 method
-                  const modal = bootstrap?.Modal?.getInstance(authModalEl);
-                  if (modal) {
-                    modal.hide();
-                  } else {
-                    // Fallback: manually hide modal
-                    authModalEl.classList.remove('show');
-                    authModalEl.setAttribute('aria-hidden', 'true');
-                    authModalEl.removeAttribute('aria-modal');
-                    authModalEl.style.display = 'none';
-                    
-                    // Remove backdrop
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) {
-                      backdrop.remove();
-                    }
-                    
-                    // Restore body
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                  }
-                }
-                
-                // Clear form
-                document.getElementById('loginEmail').value = '';
-                document.getElementById('loginPassword').value = '';
-                
-                // Update UI immediately
-                updateUserDisplay();
-                
-                // Update cart after a short delay
-                setTimeout(() => {
-                  updateCartCount();
-                  loadCart();
-                  loadWishlist();
-                }, 200);
-                
-                // Show success message
-                const successMsg = document.createElement('div');
-                successMsg.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-                successMsg.style.zIndex = '9999';
-                successMsg.innerHTML = `
-                  <strong>Login successful!</strong> Welcome back!
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-                document.body.appendChild(successMsg);
-                setTimeout(() => successMsg.remove(), 3000);
-                return; // Exit successfully
+          if (isAuthenticated) {
+            // Login successful - close modal
+            const authModalEl = document.getElementById('authModal');
+            if (authModalEl) {
+              const modal = bootstrap?.Modal?.getInstance(authModalEl);
+              if (modal) {
+                modal.hide();
+              } else {
+                // Fallback: manually hide modal
+                authModalEl.classList.remove('show');
+                authModalEl.setAttribute('aria-hidden', 'true');
+                authModalEl.style.display = 'none';
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
               }
             }
             
-            // If we get here, response exists but no token - try to extract manually
-            // This handles cases where API returns success but token isn't extracted properly
-            const possibleToken = 
-              response.accessToken || 
-              response.token || 
-              response.data?.accessToken ||
-              response.data?.token ||
-              response.access_token;
+            // Clear form
+            emailInput.value = '';
+            passwordInput.value = '';
             
-            if (possibleToken) {
-              console.log('Manually saving token from response');
-              window.ECommerceAPI.TokenManager.setToken(possibleToken);
-              
-              const possibleRefreshToken = 
-                response.refreshToken || 
-                response.refresh || 
-                response.data?.refreshToken ||
-                response.refresh_token;
-              
-              if (possibleRefreshToken) {
-                window.ECommerceAPI.TokenManager.setRefreshToken(possibleRefreshToken);
-              }
-              
-              // Save user data if available
-              if (userInResponse) {
-                const user = response.user || response.data?.user || response.data;
-                if (user && typeof user === 'object' && !user.accessToken) {
-                  localStorage.setItem('user', JSON.stringify(user));
-                }
-              }
-              
-              // Wait and check again
-              await new Promise(resolve => setTimeout(resolve, 150));
-              
-              if (window.ECommerceAPI.Auth.isAuthenticated()) {
-                // Close modal - try multiple methods
-                const authModalEl = document.getElementById('authModal');
-                if (authModalEl) {
-                  const modal = bootstrap?.Modal?.getInstance(authModalEl);
-                  if (modal) {
-                    modal.hide();
-                  } else {
-                    authModalEl.classList.remove('show');
-                    authModalEl.setAttribute('aria-hidden', 'true');
-                    authModalEl.removeAttribute('aria-modal');
-                    authModalEl.style.display = 'none';
-                    const backdrop = document.querySelector('.modal-backdrop');
-                    if (backdrop) backdrop.remove();
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                  }
-                }
-                
-                document.getElementById('loginEmail').value = '';
-                document.getElementById('loginPassword').value = '';
-                
-                setTimeout(() => {
-                  updateUserDisplay();
-                  updateCartCount();
-                  loadCart();
-                  loadWishlist();
-                }, 200);
-                
-                const successMsg = document.createElement('div');
-                successMsg.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-                successMsg.style.zIndex = '9999';
-                successMsg.innerHTML = `<strong>Login successful!</strong> Welcome back!<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-                document.body.appendChild(successMsg);
-                setTimeout(() => successMsg.remove(), 3000);
-                return;
-              }
-            }
+            // Update UI
+            updateUserDisplay();
+            setTimeout(() => {
+              updateCartCount();
+              loadCart();
+              loadWishlist();
+            }, 200);
+            
+            // Show success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+            successMsg.style.zIndex = '9999';
+            successMsg.innerHTML = `
+              <strong>Login successful!</strong> Welcome back!
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(successMsg);
+            setTimeout(() => successMsg.remove(), 3000);
+          } else {
+            // No token received
+            throw new Error('Login failed - No authentication token received. Please check your credentials and try again.');
           }
-          
-          // If we get here, login likely failed
-          console.error('Login failed - Response structure:', response);
-          console.error('Available fields:', Object.keys(response || {}));
-          
-          // Check if response has error message
-          const errorMsg = response?.message || response?.error || response?.data?.message || response?.data?.error;
-          if (errorMsg) {
-            throw new Error(errorMsg);
-          }
-          
-          throw new Error('Login failed - No authentication token received. Please check your credentials and try again.');
         } catch (error) {
-          let errorMessage = error?.message || error?.data?.message || 'Login failed. Please check your credentials.';
+          // Handle errors
+          let errorMessage = 'Login failed. Please check your credentials.';
           
-          // Special handling for 500 errors
-          if (error?.status === 500) {
-            errorMessage = 'Server error - The API server encountered an error. Please try again later.';
+          if (error?.message) {
+            errorMessage = error.message;
+          } else if (error?.data?.message) {
+            errorMessage = error.data.message;
+          } else if (typeof error === 'string') {
+            errorMessage = error;
           }
           
-          const status = error?.status && error.status !== 500 ? ` (Error ${error.status})` : '';
-          errorDiv.textContent = `${errorMessage}${status}`;
+          // Provide user-friendly error messages
+          if (error?.status === 401) {
+            errorMessage = 'Invalid email or password. Please try again.';
+          } else if (error?.status === 404) {
+            errorMessage = 'User not found. Please check your email address.';
+          } else if (error?.status === 500) {
+            errorMessage = 'Server error. Please try again later.';
+          } else if (error?.status === 400) {
+            errorMessage = errorMessage || 'Invalid request. Please check your input.';
+          } else if (error?.type === 'network') {
+            errorMessage = 'Network error. Please check your internet connection.';
+          }
+          
+          // Display error
+          errorDiv.textContent = errorMessage;
           errorDiv.classList.remove('d-none');
+          
           console.error('Login error:', error);
+        } finally {
+          // Restore button state
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalButtonText;
         }
       });
     }
@@ -817,6 +728,31 @@
     updateUserDisplay();
   }
 
+  // Check authentication status on page load
+  async function checkAuthOnLoad() {
+    try {
+      if (window.ECommerceAPI && window.ECommerceAPI.Auth && window.ECommerceAPI.Auth.checkAuth) {
+        const hasAuth = await window.ECommerceAPI.Auth.checkAuth();
+        if (hasAuth) {
+          // Set localStorage flag
+          localStorage.setItem('hasAuth', 'true');
+          // Get user info
+          const user = await window.ECommerceAPI.Auth.getCurrentUser();
+          if (user) {
+            localStorage.setItem('user', JSON.stringify(user));
+          }
+        } else {
+          // Clear auth flag if not authenticated
+          localStorage.removeItem('hasAuth');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking auth on load:', error);
+      // On error, clear auth flag to be safe
+      localStorage.removeItem('hasAuth');
+    }
+  }
+
   /**
    * Update user display in header
    */
@@ -826,7 +762,6 @@
     }
     
     const userIconLink = document.getElementById('user-icon-link');
-    const userInfoDisplay = document.getElementById('user-info-display');
     const userProfileMenu = document.getElementById('user-profile-menu');
     
     if (window.ECommerceAPI.Auth.isAuthenticated()) {
@@ -889,7 +824,7 @@
           userProfileMenu.classList.remove('d-none');
         }
         
-        // Initialize Bootstrap dropdown
+        // Initialize Bootstrap dropdown with autoClose: false to keep it open
         try {
           const existingDropdown = bootstrap?.Dropdown?.getInstance(userIconLink);
           if (existingDropdown) {
@@ -897,26 +832,17 @@
           }
           setTimeout(() => {
             try {
-              new bootstrap.Dropdown(userIconLink);
+              // Use autoClose: false to keep menu open - especially important for mobile/touch
+              // We'll manually close it when clicking outside
+              const dropdown = new bootstrap.Dropdown(userIconLink, {
+                autoClose: false // Keep menu open - user can click items without it closing
+              });
             } catch (err) {
               console.log('Dropdown init error:', err);
             }
           }, 10);
         } catch (e) {
           console.log('Could not initialize dropdown:', e);
-        }
-        
-        // Display user info if element exists
-        if (userInfoDisplay) {
-          let userName = user.name;
-          if (!userName && user.firstName) {
-            userName = user.firstName + (user.lastName ? ' ' + user.lastName : '');
-          }
-          if (!userName) {
-            userName = user.email || 'User';
-          }
-          userInfoDisplay.textContent = userName;
-          userInfoDisplay.classList.remove('d-none');
         }
       }
     } else {
@@ -966,11 +892,6 @@
         }
       }
       
-      // Hide user info
-      if (userInfoDisplay) {
-        userInfoDisplay.classList.add('d-none');
-        userInfoDisplay.textContent = '';
-      }
     }
   }
   
@@ -1017,15 +938,20 @@
               let dropdown = bootstrap?.Dropdown?.getInstance(userIconLink);
               if (!dropdown) {
                 try {
-                  dropdown = new bootstrap.Dropdown(userIconLink);
+                  // Use autoClose: false to keep menu open - especially important for mobile/touch
+                  // We'll manually close it when clicking outside
+                  dropdown = new bootstrap.Dropdown(userIconLink, {
+                    autoClose: false // Keep menu open - user can click items without it closing
+                  });
                 } catch (err) {
                   console.log('Could not create dropdown:', err);
                 }
               }
               if (dropdown) {
-                dropdown.toggle();
+                // Show the dropdown
+                dropdown.show();
               }
-            }, 10);
+            }, 100); // Longer delay for mobile devices to ensure menu stays visible
           }
           
           return false;
@@ -1050,6 +976,39 @@
         }
       }
     }, true);
+    
+    // Prevent dropdown from closing when clicking inside menu items
+    document.addEventListener('click', function(e) {
+      const userProfileMenu = document.getElementById('user-profile-menu');
+      if (!userProfileMenu) return;
+      
+      // If clicking inside the dropdown menu, prevent it from closing
+      if (userProfileMenu.contains(e.target) && !userProfileMenu.classList.contains('d-none')) {
+        const dropdownItem = e.target.closest('.dropdown-item');
+        if (dropdownItem && dropdownItem.href && dropdownItem.href !== '#') {
+          // Allow navigation for links (Edit Profile, My Orders)
+          // Don't prevent default - let the link work
+          return;
+        }
+        // For other clicks inside menu, prevent closing
+        e.stopPropagation();
+      }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const userIconLink = document.getElementById('user-icon-link');
+      const userProfileMenu = document.getElementById('user-profile-menu');
+      if (!userIconLink || !userProfileMenu) return;
+      
+      // If clicking outside both the icon and menu, close the dropdown
+      if (!userIconLink.contains(e.target) && !userProfileMenu.contains(e.target)) {
+        const dropdown = bootstrap?.Dropdown?.getInstance(userIconLink);
+        if (dropdown) {
+          dropdown.hide();
+        }
+      }
+    });
     
     // Use event delegation on document to handle dynamically shown elements
     document.addEventListener('click', async function(e) {
@@ -1097,12 +1056,29 @@
       }
 
       // Check if user has location/address set (warn but don't block)
-      const user = window.ECommerceAPI.Auth.getUser();
-      if (user && (!user.address || !user.latitude || !user.longitude)) {
-        const setLocationNow = confirm('You haven\'t set your delivery address yet. You will need to set it before checkout.\n\nClick OK to set your address now, or Cancel to continue adding to cart.');
-        if (setLocationNow) {
-          window.location.href = 'edit-profile.html';
-          return;
+      // Fetch latest user data to ensure we have up-to-date information
+      let user = null;
+      try {
+        user = await window.ECommerceAPI.Auth.getCurrentUser();
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+        user = window.ECommerceAPI.Auth.getUser();
+      }
+      
+      if (user) {
+        const hasAddress = user.address && typeof user.address === 'string' && user.address.trim().length > 0;
+        const hasLatitude = user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
+        const hasLongitude = user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
+        
+        if (!hasAddress || !hasLatitude || !hasLongitude) {
+          const setLocationNow = confirm('You haven\'t set your delivery address yet. You will need to set it before checkout.\n\nClick OK to set your address now, or Cancel to continue adding to cart.');
+          if (setLocationNow) {
+            window.location.href = 'edit-profile.html';
+            return;
+          }
         }
       }
 
@@ -1298,26 +1274,51 @@
       }
       
       const productIdStr = String(productId);
-      const isInWishlist = wishlistItems.has(productIdStr);
+      
+      // Prevent concurrent operations on the same product
+      if (wishlistOperationsInProgress.has(productIdStr)) {
+        console.log('Wishlist operation already in progress for product:', productIdStr);
+        return;
+      }
+      
+      // Mark operation as in progress
+      wishlistOperationsInProgress.add(productIdStr);
+      
+      const wasInWishlist = wishlistItems.has(productIdStr);
+      
+      // Optimistic update: Update UI immediately before API call
+      if (wasInWishlist) {
+        wishlistItems.delete(productIdStr);
+      } else {
+        wishlistItems.add(productIdStr);
+      }
+      updateWishlistButtons();
       
       try {
-        if (isInWishlist) {
-          // Remove from wishlist
-          await window.ECommerceAPI.Wishlist.remove(productId);
-          wishlistItems.delete(productIdStr);
+        // Use toggle endpoint - it automatically adds if not in wishlist, removes if it is
+        await window.ECommerceAPI.Wishlist.toggle(productId);
+        
+        // Show success message after API call succeeds
+        if (wasInWishlist) {
           showSuccessMessage('Product removed from wishlist');
         } else {
-          // Add to wishlist
-          await window.ECommerceAPI.Wishlist.add(productId);
-          wishlistItems.add(productIdStr);
           showSuccessMessage('Product added to wishlist');
         }
-        
-        updateWishlistButtons();
       } catch (error) {
+        // Revert optimistic update on error
+        if (wasInWishlist) {
+          wishlistItems.add(productIdStr);
+        } else {
+          wishlistItems.delete(productIdStr);
+        }
+        updateWishlistButtons();
+        
         console.error('Error updating wishlist:', error);
         const errorMessage = error?.message || error?.data?.message || 'Failed to update wishlist';
         alert(`${errorMessage}. Please try again.`);
+      } finally {
+        // Always remove from in-progress set when done
+        wishlistOperationsInProgress.delete(productIdStr);
       }
     });
 
@@ -1600,9 +1601,27 @@
         return;
       }
       
+      // Fetch latest user data from API to ensure we have the most up-to-date address information
+      let user = null;
+      try {
+        user = await window.ECommerceAPI.Auth.getCurrentUser();
+        // Update cached user data
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+        // Fallback to cached user if API call fails
+        user = window.ECommerceAPI.Auth.getUser();
+      }
+      
       // Check if user has location/address set
-      const user = window.ECommerceAPI.Auth.getUser();
-      if (!user || !user.address || !user.latitude || !user.longitude) {
+      // Check for address as a non-empty string and valid coordinates
+      const hasAddress = user && user.address && typeof user.address === 'string' && user.address.trim().length > 0;
+      const hasLatitude = user && user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
+      const hasLongitude = user && user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
+      
+      if (!user || !hasAddress || !hasLatitude || !hasLongitude) {
         const confirmSetLocation = confirm('Please set your delivery address and location before proceeding to checkout. Would you like to go to your profile to set it now?');
         if (confirmSetLocation) {
           window.location.href = 'edit-profile.html';
@@ -2428,4 +2447,5 @@
   });
 
 })(jQuery);
+
 

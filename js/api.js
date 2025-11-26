@@ -35,6 +35,7 @@ async function apiRequest(endpoint, options = {}) {
   
   const config = {
     ...options,
+    credentials: 'include', // Include cookies in all requests
     headers: {
       ...defaultHeaders,
       ...options.headers,
@@ -219,6 +220,8 @@ const AuthService = {
   login: async (credentials) => {
     try {
       console.log('Attempting login with:', { email: credentials.email });
+      
+      // Login endpoint only returns a message (success/failed) and sets tokens in cookies
       const response = await apiRequest('/auth/login', {
         method: 'POST',
         body: JSON.stringify(credentials),
@@ -226,76 +229,64 @@ const AuthService = {
       
       console.log('Login API response received:', response);
       
-      // Handle different response formats - check multiple possible locations
-      const accessToken = 
-        response?.accessToken || 
-        response?.token || 
-        response?.access_token ||
-        response?.data?.accessToken || 
-        response?.data?.token ||
-        response?.data?.access_token;
-        
-      const refreshToken = 
-        response?.refreshToken || 
-        response?.refresh || 
-        response?.refresh_token ||
-        response?.data?.refreshToken || 
-        response?.data?.refresh ||
-        response?.data?.refresh_token;
-        
-      const user = 
-        response?.user || 
-        response?.data?.user || 
-        response?.data;
+      // Check if login was successful by checking for hasAuth cookie
+      const hasAuth = await AuthService.checkAuth();
       
-      console.log('Extracted tokens:', { accessToken: !!accessToken, refreshToken: !!refreshToken, hasUser: !!user });
-      
-      // Save tokens if they exist
-      if (accessToken) {
-        TokenManager.setToken(accessToken);
-        console.log('Access token saved to localStorage');
-      } else {
-        console.warn('No access token found in response!');
-      }
-      
-      if (refreshToken) {
-        TokenManager.setRefreshToken(refreshToken);
-        console.log('Refresh token saved to localStorage');
-      }
-      
-      // Save user data if it exists
-      if (user && typeof user === 'object') {
-        // Check if user object contains tokens (don't save those)
-        if (!user.accessToken && !user.token && !user.access_token) {
-          localStorage.setItem('user', JSON.stringify(user));
-          console.log('User data saved to localStorage');
+      if (hasAuth) {
+        // If hasAuth is true, call /auth/me to validate tokens and get user info
+        try {
+          const user = await apiRequest('/auth/me');
+          
+          if (user) {
+            // Save user data to localStorage
+            localStorage.setItem('user', JSON.stringify(user));
+            console.log('User data saved after login:', user);
+            
+            // Mark that authentication is active (tokens are in cookies)
+            localStorage.setItem('hasAuth', 'true');
+            
+            return {
+              ...response,
+              user: user,
+              authenticated: true,
+              message: response.message || 'Login successful'
+            };
+          }
+        } catch (meError) {
+          console.error('Error fetching user after login:', meError);
+          // Login was successful (tokens set), but /auth/me failed
+          // This shouldn't happen, but handle gracefully
+          localStorage.setItem('hasAuth', 'true');
+          return {
+            ...response,
+            authenticated: true,
+            message: response.message || 'Login successful'
+          };
         }
-      } else if (response?.email || response?.data?.email) {
-        // Save basic user info if available
-        const userData = {
-          email: response.email || response.data.email,
-          name: response.name || response.data?.name || response.firstName || response.data?.firstName || '',
-          id: response.id || response.data?.id || response.userId || response.data?.userId || ''
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-        console.log('Basic user data saved:', userData);
       }
       
-      // Verify token was saved
-      const savedToken = TokenManager.getToken();
-      console.log('Token verification:', { saved: !!savedToken, length: savedToken?.length });
-      
-      // Return response with normalized structure for easier handling
+      // If hasAuth is false, login likely failed
       return {
         ...response,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        user: user,
-        _tokenSaved: !!savedToken // Flag to indicate token was saved
+        authenticated: false,
+        message: response.message || 'Login failed'
       };
     } catch (error) {
       console.error('Login API error:', error);
       throw error;
+    }
+  },
+  
+  checkAuth: async () => {
+    try {
+      // Check if hasAuth is true in cookies
+      const response = await apiRequest('/auth/has');
+      // Assuming the API returns { hasAuth: true/false } or just true/false
+      const hasAuth = response?.hasAuth !== undefined ? response.hasAuth : response === true || response === 'true';
+      return hasAuth;
+    } catch (error) {
+      console.error('Error checking auth:', error);
+      return false;
     }
   },
   
@@ -308,6 +299,7 @@ const AuthService = {
       console.error('Logout error:', error);
     } finally {
       TokenManager.clear();
+      localStorage.removeItem('hasAuth');
     }
   },
   
@@ -337,8 +329,14 @@ const AuthService = {
   
   getCurrentUser: async () => {
     try {
-      return await apiRequest('/users/me');
+      // Use /auth/me endpoint to get current authenticated user
+      const user = await apiRequest('/auth/me');
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+      return user;
     } catch (error) {
+      console.error('Error fetching current user:', error);
       return null;
     }
   },
@@ -354,7 +352,10 @@ const AuthService = {
     }
   },
   
-  isAuthenticated: () => !!TokenManager.getToken(),
+  isAuthenticated: () => {
+    // Check localStorage flag (set by checkAuth or login)
+    return localStorage.getItem('hasAuth') === 'true';
+  },
   
   getUser: () => {
     const userStr = localStorage.getItem('user');
@@ -620,6 +621,17 @@ const WishlistService = {
     } catch (error) {
       console.error('Error fetching wishlist:', error);
       return [];
+    }
+  },
+  
+  toggle: async (productId) => {
+    try {
+      return await apiRequest('/wishlist/toggle', {
+        method: 'POST',
+        body: JSON.stringify({ productId: String(productId) }),
+      });
+    } catch (error) {
+      throw error;
     }
   },
   

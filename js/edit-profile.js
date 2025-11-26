@@ -70,16 +70,29 @@
       document.getElementById('address').value = userData.address || '';
 
       // Load map coordinates if available
+      // Handle both formats: separate latitude/longitude or coordinates string
+      let lat = null;
+      let lng = null;
+      
       if (userData.latitude && userData.longitude) {
-        const lat = parseFloat(userData.latitude);
-        const lng = parseFloat(userData.longitude);
+        // Direct latitude/longitude fields
+        lat = parseFloat(userData.latitude);
+        lng = parseFloat(userData.longitude);
+      } else if (userData.coordinates && typeof userData.coordinates === 'string') {
+        // Coordinates as string "lat,lng"
+        const coords = userData.coordinates.split(',');
+        if (coords.length >= 2) {
+          lat = parseFloat(coords[0].trim());
+          lng = parseFloat(coords[1].trim());
+        }
+      }
+      
+      if (lat !== null && lng !== null && !isNaN(lat) && !isNaN(lng)) {
         document.getElementById('latitude').value = lat;
         document.getElementById('longitude').value = lng;
         
         // Set marker on map (wait for map to be initialized)
-        if (!isNaN(lat) && !isNaN(lng)) {
-          // The map initialization will handle this after it loads
-        }
+        // The map initialization will handle this after it loads
       }
 
       // Hide loading, show form
@@ -151,9 +164,14 @@
       }
 
       // Add coordinates if marker is set
+      // API expects coordinates as a string in format "lat,lng"
       if (latitude && longitude) {
-        userData.latitude = parseFloat(latitude);
-        userData.longitude = parseFloat(longitude);
+        const lat = parseFloat(latitude);
+        const lng = parseFloat(longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          // Format as "latitude,longitude" string (API expects this format)
+          userData.coordinates = `${lat},${lng}`;
+        }
       }
 
       // Validate required fields
@@ -164,19 +182,31 @@
       // Update user profile
       const response = await window.ECommerceAPI.Auth.updateCurrentUser(userData);
 
-      // Update localStorage user data
-      const currentUser = window.ECommerceAPI.Auth.getUser();
-      if (currentUser) {
-        const updatedUser = {
-          ...currentUser,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          phone: userData.phone || currentUser.phone,
-          address: userData.address || currentUser.address,
-          latitude: userData.latitude || currentUser.latitude,
-          longitude: userData.longitude || currentUser.longitude
-        };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
+      // Fetch updated user data from API to ensure we have the latest information
+      try {
+        const updatedUser = await window.ECommerceAPI.Auth.getCurrentUser();
+        if (updatedUser) {
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+      } catch (error) {
+        console.error('Error fetching updated user:', error);
+        // Fallback: update localStorage with what we sent
+        const currentUser = window.ECommerceAPI.Auth.getUser();
+        if (currentUser) {
+          const lat = userData.latitude;
+          const lng = userData.longitude;
+          const updatedUser = {
+            ...currentUser,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            phone: userData.phone || currentUser.phone,
+            address: userData.address || currentUser.address,
+            latitude: lat || currentUser.latitude,
+            longitude: lng || currentUser.longitude,
+            coordinates: userData.coordinates || currentUser.coordinates
+          };
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+        }
       }
 
       // Show success message

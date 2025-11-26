@@ -321,6 +321,9 @@ h1,h2,h3,h4,h5,h6 {
 /* User profile dropdown specific styling */
 #user-profile-menu {
   min-width: 200px;
+  margin-top: 8px;
+  z-index: 1050 !important; /* Higher z-index to ensure it's visible */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
 }
 
 #user-profile-menu .dropdown-item {
@@ -328,6 +331,15 @@ h1,h2,h3,h4,h5,h6 {
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
+  cursor: pointer;
+  min-height: 44px; /* Touch-friendly minimum height */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+#user-profile-menu .dropdown-item:hover svg,
+#user-profile-menu .dropdown-item:focus svg,
+#user-profile-menu .dropdown-item:active svg {
+  color: var(--accent-color);
 }
 
 #user-profile-menu .dropdown-item svg {
@@ -338,9 +350,10 @@ h1,h2,h3,h4,h5,h6 {
   transition: color 0.2s ease;
 }
 
-#user-profile-menu .dropdown-item:hover svg,
-#user-profile-menu .dropdown-item:focus svg {
-  color: var(--accent-color);
+#user-profile-menu .dropdown-item:hover,
+#user-profile-menu .dropdown-item:focus,
+#user-profile-menu .dropdown-item:active {
+  background-color: #f8f9fa;
 }
 
 #user-profile-menu .dropdown-item span {
@@ -349,6 +362,28 @@ h1,h2,h3,h4,h5,h6 {
 
 #user-profile-menu.d-none {
   display: none !important;
+}
+
+/* Ensure dropdown stays aligned properly */
+.dropdown > .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1050 !important;
+}
+
+/* Mobile-specific improvements */
+@media (max-width: 991px) {
+  #user-profile-menu {
+    min-width: 220px;
+    margin-top: 10px;
+    border-radius: 8px;
+  }
+  
+  #user-profile-menu .dropdown-item {
+    padding: 14px 20px;
+    font-size: 15px;
+  }
 }
 
 /* Enable hover for dropdown on desktop */

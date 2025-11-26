@@ -8,6 +8,7 @@
 
   let wishlistItems = [];
   let allProducts = [];
+  let wishlistOperationsInProgress = new Set(); // Track ongoing wishlist operations to prevent race conditions
 
   // Initialize when DOM is ready
   $(document).ready(function() {
@@ -201,20 +202,42 @@
       return;
     }
 
+    const productIdStr = String(productId);
+    
+    // Prevent concurrent operations on the same product
+    if (wishlistOperationsInProgress.has(productIdStr)) {
+      console.log('Wishlist operation already in progress for product:', productIdStr);
+      return;
+    }
+    
+    // Mark operation as in progress
+    wishlistOperationsInProgress.add(productIdStr);
+
+    // Store original items for potential revert
+    const originalItems = [...wishlistItems];
+    
+    // Optimistic update: Remove from local array immediately
+    wishlistItems = wishlistItems.filter(item => item.id !== productId && String(item.id) !== String(productId));
+    
+    // Re-render immediately
+    renderWishlistItems();
+
     try {
-      await window.ECommerceAPI.Wishlist.remove(productId);
-      
-      // Remove from local array
-      wishlistItems = wishlistItems.filter(item => item.id !== productId && String(item.id) !== String(productId));
-      
-      // Re-render
-      renderWishlistItems();
+      // Use toggle endpoint - if product is in wishlist, it will remove it
+      await window.ECommerceAPI.Wishlist.toggle(productId);
       
       showSuccess('Product removed from wishlist');
     } catch (error) {
+      // Revert optimistic update on error
+      wishlistItems = originalItems;
+      renderWishlistItems();
+      
       console.error('Error removing from wishlist:', error);
       const errorMessage = error?.message || error?.data?.message || 'Failed to remove item';
       showError(errorMessage);
+    } finally {
+      // Always remove from in-progress set when done
+      wishlistOperationsInProgress.delete(productIdStr);
     }
   }
 
