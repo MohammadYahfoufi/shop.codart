@@ -836,17 +836,40 @@ footer .footer-menu > img {
   max-width: 1600px;
 }
 .banner-blocks {
-  display: grid;
+  display: grid !important;
   grid-template-columns: repeat(12, 1fr);
   grid-template-rows: repeat(2, 1fr);
   grid-gap: 2rem;
-  min-height: 400px;
+  min-height: 650px;
   visibility: visible !important;
   opacity: 1 !important;
+  position: relative;
+  width: 100%;
 }
-.block-1 { grid-area: 1 / 1 / 3 / 8; display: block !important; visibility: visible !important; }
-.block-2 { grid-area: 1 / 8 / 2 / 13; display: block !important; visibility: visible !important; }
-.block-3 { grid-area: 2 / 8 / 3 / 13; display: block !important; visibility: visible !important; }
+.block-1 { 
+  grid-area: 1 / 1 / 3 / 8; 
+  display: block !important; 
+  visibility: visible !important; 
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
+}
+.block-2 { 
+  grid-area: 1 / 8 / 2 / 13; 
+  display: block !important; 
+  visibility: visible !important; 
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
+}
+.block-3 { 
+  grid-area: 2 / 8 / 3 / 13; 
+  display: block !important; 
+  visibility: visible !important; 
+  opacity: 1 !important;
+  position: relative;
+  z-index: 1;
+}
 
 @media screen and (max-width:1140px) {
   .banner-blocks {
@@ -867,6 +890,9 @@ footer .footer-menu > img {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
 }
 .banner-ad.blue {
   background: #e6f3fb;
