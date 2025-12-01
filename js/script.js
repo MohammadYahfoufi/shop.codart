@@ -7,21 +7,10 @@
     var Body = $('body');
         Body.addClass('preloader-site');
     });
-    // Use both window.load and window.onload for better compatibility
-    $(window).on('load', function() {
-        $('.preloader-wrapper').addClass('hidden').fadeOut(500);
+    $(window).load(function() {
+        $('.preloader-wrapper').fadeOut();
         $('body').removeClass('preloader-site');
     });
-    // Fallback: hide preloader after a short delay if window.load doesn't fire
-    setTimeout(function() {
-        $('.preloader-wrapper').addClass('hidden').fadeOut(500);
-        $('body').removeClass('preloader-site');
-    }, 1000);
-    // Emergency fallback: force hide after 2 seconds
-    setTimeout(function() {
-        $('.preloader-wrapper').addClass('hidden').css('display', 'none');
-        $('body').removeClass('preloader-site');
-    }, 2000);
   }
 
   // init Chocolat light box
@@ -33,50 +22,36 @@
 	}
 
   var initSwiper = function() {
-    // Wait for Swiper library to be available
-    var initMainSwiper = function() {
-      // Check if Swiper library is loaded
-      if (typeof Swiper === 'undefined') {
-        console.warn('Swiper library is not loaded yet, retrying...');
-        setTimeout(initMainSwiper, 100);
-        return;
-      }
+    // Check if Swiper library is loaded
+    if (typeof Swiper === 'undefined') {
+      console.error('Swiper library is not loaded');
+      return;
+    }
 
-      // Check if main-swiper element exists
-      var mainSwiperEl = document.querySelector(".main-swiper");
-      if (!mainSwiperEl) {
-        console.warn('Main swiper element not found, retrying...');
-        setTimeout(initMainSwiper, 100);
-        return;
-      }
+    // Check if main-swiper element exists
+    var mainSwiperEl = document.querySelector(".main-swiper");
+    if (!mainSwiperEl) {
+      console.error('Main swiper element not found');
+      return;
+    }
 
-      // Check if already initialized
-      if (mainSwiperEl.swiper) {
-        console.log('Main swiper already initialized');
-        return;
-      }
-
-      try {
-        var swiper = new Swiper(".main-swiper", {
-          speed: 500,
-          autoplay: {
-            delay: 4000,
-            disableOnInteraction: false,
-          },
-          loop: true,
-          pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-          },
-        });
-        console.log('Main swiper initialized successfully');
-      } catch (error) {
-        console.error('Error initializing main swiper:', error);
-      }
-    };
-    
-    // Start initialization
-    initMainSwiper();
+    try {
+      var swiper = new Swiper(".main-swiper", {
+        speed: 500,
+        autoplay: {
+          delay: 4000,
+          disableOnInteraction: false,
+        },
+        loop: true,
+        pagination: {
+          el: ".swiper-pagination",
+          clickable: true,
+        },
+      });
+      console.log('Main swiper initialized successfully');
+    } catch (error) {
+      console.error('Error initializing main swiper:', error);
+    }
 
     // Don't initialize category carousel here - it will be initialized after categories are loaded from API
     // The category carousel will be initialized in app.js after categories are fetched
