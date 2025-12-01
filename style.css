@@ -784,6 +784,21 @@ footer .footer-menu > img {
   left: 0;
   z-index: 111;
   background: #fff;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+/* Hide preloader after page loads */
+.preloader-wrapper.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Ensure hero section is always visible */
+section:first-of-type {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .preloader-wrapper .preloader {
@@ -916,6 +931,27 @@ footer .footer-menu > img {
 .banner-ad .swiper-slide {
   min-height: 630px;
   display: flex;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Ensure swiper wrapper and slides are visible */
+.main-swiper,
+.main-swiper .swiper-wrapper,
+.main-swiper .swiper-slide {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+}
+
+.main-swiper .swiper-wrapper {
+  display: flex !important;
+}
+
+.main-swiper .swiper-slide {
+  display: flex !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
 }
 /* .banner-ad .banner-content {
   padding: 52px;
