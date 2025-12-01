@@ -799,6 +799,15 @@ section:first-of-type {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Ensure banner blocks and all children are visible */
+section:first-of-type .banner-blocks,
+section:first-of-type .banner-blocks * {
+  position: relative;
+  z-index: 2;
 }
 
 .preloader-wrapper .preloader {
@@ -856,6 +865,7 @@ section:first-of-type {
   grid-template-rows: repeat(2, 1fr);
   grid-gap: 2rem;
   min-height: 650px;
+  height: 650px;
   visibility: visible !important;
   opacity: 1 !important;
   position: relative;
@@ -889,12 +899,22 @@ section:first-of-type {
 @media screen and (max-width:1140px) {
   .banner-blocks {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, 1fr);
+    grid-template-rows: auto auto auto;
+    min-height: auto;
+    height: auto;
   }
-  .block-1 { grid-area: 1 / 1 / 3 / 2; }
-  .block-2 { grid-area: 3 / 1 / 4 / 2; }
-  .block-3 { grid-area: 4 / 1 / 5 / 2; }
-  
+  .block-1 { 
+    grid-area: 1 / 1 / 2 / 2; 
+    min-height: 400px;
+  }
+  .block-2 { 
+    grid-area: 2 / 1 / 3 / 2; 
+    min-height: 300px;
+  }
+  .block-3 { 
+    grid-area: 3 / 1 / 4 / 2; 
+    min-height: 300px;
+  }
 }
 
 /* banner ad */
@@ -908,6 +928,11 @@ section:first-of-type {
   width: 100%;
   height: 100%;
   min-height: 300px;
+}
+
+.banner-ad.large {
+  min-height: 630px;
+  height: 100%;
 }
 .banner-ad.blue {
   background: #e6f3fb;
@@ -930,35 +955,66 @@ section:first-of-type {
 }
 .banner-ad .swiper-slide {
   min-height: 630px;
+  height: 100%;
   display: flex;
   opacity: 1 !important;
   visibility: visible !important;
 }
 
 /* Ensure swiper wrapper and slides are visible */
-.main-swiper,
-.main-swiper .swiper-wrapper,
-.main-swiper .swiper-slide {
+.main-swiper {
   opacity: 1 !important;
   visibility: visible !important;
   display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 630px !important;
 }
 
 .main-swiper .swiper-wrapper {
   display: flex !important;
+  height: 100% !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .main-swiper .swiper-slide {
   display: flex !important;
   width: 100% !important;
+  height: 100% !important;
+  min-height: 630px !important;
   flex-shrink: 0 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
-/* .banner-ad .banner-content {
+.banner-ad .banner-content {
   padding: 52px;
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100%;
+  height: 100%;
+  align-items: center;
 }
+
 .banner-ad.large .banner-content {
   padding: 90px;
-} */
+}
+
+.banner-ad .banner-content .content-wrapper,
+.banner-ad .banner-content .img-wrapper {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.banner-ad .banner-content .img-wrapper img {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  max-width: 100%;
+  height: auto;
+}
 .banner-ad .banner-content .categories {
   font-family: 'Garamond';
   font-size: 37px;
