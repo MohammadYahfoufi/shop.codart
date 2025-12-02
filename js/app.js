@@ -185,14 +185,28 @@
               
               // Reinitialize Swiper
               try {
+                // Find navigation buttons - they're in a sibling section above
+                const section = carouselEl.closest('section');
+                let nextBtn = null;
+                let prevBtn = null;
+                
+                if (section) {
+                  // Look for buttons in the section header
+                  const header = section.querySelector('.section-header');
+                  if (header) {
+                    nextBtn = header.querySelector('.products-carousel-next, .swiper-next');
+                    prevBtn = header.querySelector('.products-carousel-prev, .swiper-prev');
+                  }
+                }
+                
                 new Swiper(carouselEl, {
                   slidesPerView: 4,
                   spaceBetween: 30,
                   speed: 500,
-                  navigation: {
-                    nextEl: carouselEl.querySelector('.swiper-next'),
-                    prevEl: carouselEl.querySelector('.swiper-prev'),
-                  },
+                  navigation: nextBtn && prevBtn ? {
+                    nextEl: nextBtn,
+                    prevEl: prevBtn,
+                  } : {},
                   breakpoints: {
                     0: {
                       slidesPerView: 1,
@@ -216,6 +230,11 @@
             
             // Update wishlist buttons after carousel is initialized
             updateWishlistButtons();
+            
+            // Ensure quantity controls work (event delegation should handle this, but ensure compatibility)
+            if (window.initProductQty) {
+              window.initProductQty();
+            }
           }, 200 * (index + 1)); // Stagger initialization to avoid conflicts
         });
       } else {
@@ -1113,6 +1132,7 @@
     // Add to cart buttons - handles both API products and static template products
     $(document).on('click', '.add-to-cart-btn, .nav-link:contains("Add to Cart")', async function(e) {
       e.preventDefault();
+      e.stopPropagation();
       
       if (!window.ECommerceAPI) {
         alert('API not loaded. Please refresh the page.');
@@ -1129,51 +1149,8 @@
         return;
       }
 
-      // Check if user has location/address set (warn but don't block)
-      // Fetch latest user data to ensure we have up-to-date information
-      let user = null;
-      try {
-        user = await window.ECommerceAPI.Auth.getCurrentUser();
-        if (user) {
-          localStorage.setItem('user', JSON.stringify(user));
-        }
-      } catch (error) {
-        console.error('Error fetching current user:', error);
-        user = window.ECommerceAPI.Auth.getUser();
-      }
-      
-      if (user) {
-        const hasAddress = user.address && typeof user.address === 'string' && user.address.trim().length > 0;
-        
-        // Check for coordinates - API stores them as a string "lat,lng" or as separate latitude/longitude fields
-        let hasValidCoordinates = false;
-        if (user.coordinates && typeof user.coordinates === 'string') {
-          const coords = user.coordinates.split(',');
-          if (coords.length >= 2) {
-            const lat = parseFloat(coords[0].trim());
-            const lng = parseFloat(coords[1].trim());
-            if (!isNaN(lat) && !isNaN(lng)) {
-              hasValidCoordinates = true;
-            }
-          }
-        }
-        // Also check for separate latitude/longitude fields (backward compatibility)
-        if (!hasValidCoordinates) {
-          const hasLatitude = user.latitude !== null && user.latitude !== undefined && !isNaN(user.latitude);
-          const hasLongitude = user.longitude !== null && user.longitude !== undefined && !isNaN(user.longitude);
-          if (hasLatitude && hasLongitude) {
-            hasValidCoordinates = true;
-          }
-        }
-        
-        if (!hasAddress || !hasValidCoordinates) {
-          const setLocationNow = confirm('You haven\'t set your delivery address yet. You will need to set it before checkout.\n\nClick OK to set your address now, or Cancel to continue adding to cart.');
-          if (setLocationNow) {
-            window.location.href = 'edit-profile.html';
-            return;
-          }
-        }
-      }
+      // Note: Address check removed - users can add to cart without address
+      // Address will be required only when proceeding to checkout
 
       // Check if product has API product ID
       const productId = $(this).data('product-id') || $(this).closest('.product-item').data('product-id');
@@ -1193,7 +1170,15 @@
             return;
           }
           
-          const quantityInput = $(`#quantity-${productId}`);
+          // Try to find quantity input by ID first
+          let quantityInput = $(`#quantity-${productId}`);
+          
+          // If not found, try to find within the same product-item
+          if (quantityInput.length === 0) {
+            const $productItem = $(this).closest('.product-item');
+            quantityInput = $productItem.find('.input-number, input[name="quantity"]');
+          }
+          
           const quantity = quantityInput.length ? parseInt(quantityInput.val()) || 1 : 1;
           
           // Get product price - fetch product details first
@@ -1232,7 +1217,12 @@
             quantity = 1;
           }
           
-          await window.ECommerceAPI.Cart.add(productId, productPrice, quantity);
+          console.log('Adding to cart:', { productId, productPrice, quantity });
+          const addResult = await window.ECommerceAPI.Cart.add(productId, productPrice, quantity);
+          console.log('Add to cart result:', addResult);
+          
+          // Small delay to ensure API has processed the request
+          await new Promise(resolve => setTimeout(resolve, 200));
           
           // Update cart count and load cart
           await updateCartCount();
@@ -1539,19 +1529,82 @@
     // Quantity plus/minus buttons
     $(document).on('click', '.quantity-right-plus', function(e) {
       e.preventDefault();
-      const productId = $(this).data('product-id');
-      const quantityInput = $(`#quantity-${productId}`);
+      e.stopPropagation();
+      
+      const $button = $(this);
+      let productId = $button.data('product-id');
+      
+      // Try to get product ID from button's data attribute
+      if (!productId) {
+        // Fallback: try to get from parent product-item
+        const $productItem = $button.closest('.product-item');
+        productId = $productItem.data('product-id');
+      }
+      
+      if (!productId) {
+        console.warn('Product ID not found on quantity plus button');
+        return;
+      }
+      
+      // Try to find input by ID first
+      let quantityInput = $(`#quantity-${productId}`);
+      
+      // If not found, try to find within the same product-item
+      if (quantityInput.length === 0) {
+        const $productItem = $button.closest('.product-item');
+        quantityInput = $productItem.find('.input-number, input[name="quantity"]');
+      }
+      
+      if (quantityInput.length === 0) {
+        console.warn(`Quantity input not found for product ${productId}`);
+        return;
+      }
+      
       const currentVal = parseInt(quantityInput.val()) || 1;
       quantityInput.val(currentVal + 1);
+      
+      // Trigger change event in case other code listens to it
+      quantityInput.trigger('change');
     });
 
     $(document).on('click', '.quantity-left-minus', function(e) {
       e.preventDefault();
-      const productId = $(this).data('product-id');
-      const quantityInput = $(`#quantity-${productId}`);
+      e.stopPropagation();
+      
+      const $button = $(this);
+      let productId = $button.data('product-id');
+      
+      // Try to get product ID from button's data attribute
+      if (!productId) {
+        // Fallback: try to get from parent product-item
+        const $productItem = $button.closest('.product-item');
+        productId = $productItem.data('product-id');
+      }
+      
+      if (!productId) {
+        console.warn('Product ID not found on quantity minus button');
+        return;
+      }
+      
+      // Try to find input by ID first
+      let quantityInput = $(`#quantity-${productId}`);
+      
+      // If not found, try to find within the same product-item
+      if (quantityInput.length === 0) {
+        const $productItem = $button.closest('.product-item');
+        quantityInput = $productItem.find('.input-number, input[name="quantity"]');
+      }
+      
+      if (quantityInput.length === 0) {
+        console.warn(`Quantity input not found for product ${productId}`);
+        return;
+      }
+      
       const currentVal = parseInt(quantityInput.val()) || 1;
       if (currentVal > 1) {
         quantityInput.val(currentVal - 1);
+        // Trigger change event in case other code listens to it
+        quantityInput.trigger('change');
       }
     });
 
@@ -1797,8 +1850,12 @@
     const cartOffcanvas = document.getElementById('offcanvasCart');
     if (cartOffcanvas) {
       cartOffcanvas.addEventListener('show.bs.offcanvas', function() {
-        if (window.ECommerceAPI && window.ECommerceAPI.Auth.isAuthenticated()) {
+        console.log('Cart offcanvas opened, loading cart...');
+        // Always try to load cart, even if not authenticated (will show appropriate message)
+        if (window.ECommerceAPI && window.ECommerceAPI.Cart) {
           loadCart();
+        } else {
+          console.warn('Cart API not available');
         }
       });
     }
@@ -1836,12 +1893,36 @@
    * Load cart items and display them
    */
   async function loadCart() {
-    if (!window.ECommerceAPI || !window.ECommerceAPI.Cart || !window.ECommerceAPI.Auth.isAuthenticated()) {
+    if (!window.ECommerceAPI || !window.ECommerceAPI.Cart) {
+      console.warn('Cart API not available');
+      return;
+    }
+    
+    // Check authentication
+    if (!window.ECommerceAPI.Auth || !window.ECommerceAPI.Auth.isAuthenticated()) {
+      console.log('User not authenticated, cart will be empty');
+      // Show empty cart message
+      const cartItemsContainer = document.getElementById('cart-items-container');
+      if (cartItemsContainer) {
+        cartItemsContainer.innerHTML = `
+          <div class="text-center text-muted py-5">
+            <p>Your cart is empty</p>
+            <p class="small mt-2">Please login to add items to your cart</p>
+          </div>
+        `;
+        cartItemsContainer.style.display = 'block';
+      }
+      const cartTotalContainer = document.getElementById('cart-total-container');
+      if (cartTotalContainer) {
+        cartTotalContainer.classList.add('d-none');
+      }
       return;
     }
     
     try {
+      console.log('Loading cart from API...');
       const cart = await window.ECommerceAPI.Cart.get();
+      console.log('Cart API response:', cart);
       
       // Handle different response formats
       let cartItems = [];
@@ -1857,11 +1938,14 @@
         cartItems = [];
       }
       
+      console.log('Processed cart items:', cartItems);
+      
       const cartItemsList = document.getElementById('cart-items-list');
       const cartItemsContainer = document.getElementById('cart-items-container');
       const cartTotalContainer = document.getElementById('cart-total-container');
       
       if (cartItems.length === 0) {
+        console.log('Cart is empty');
         if (cartItemsContainer) {
           cartItemsContainer.innerHTML = `
             <div class="text-center text-muted py-5">
@@ -1870,6 +1954,9 @@
             </div>
           `;
           cartItemsContainer.style.display = 'block';
+        }
+        if (cartItemsList) {
+          cartItemsList.innerHTML = '';
         }
         if (cartTotalContainer) {
           cartTotalContainer.classList.add('d-none');
@@ -1887,6 +1974,8 @@
         }
         return;
       }
+      
+      console.log(`Loading ${cartItems.length} cart items...`);
       
       // Load product details for cart items
       // Note: Products MUST exist in API for cart to display properly (name, price, etc.)
@@ -2020,6 +2109,21 @@
       
     } catch (error) {
       console.error('Error loading cart:', error);
+      // Show error message in cart
+      const cartItemsContainer = document.getElementById('cart-items-container');
+      if (cartItemsContainer) {
+        cartItemsContainer.innerHTML = `
+          <div class="text-center text-danger py-5">
+            <p>Error loading cart</p>
+            <p class="small mt-2">${error.message || 'Please try refreshing the page'}</p>
+          </div>
+        `;
+        cartItemsContainer.style.display = 'block';
+      }
+      const cartTotalContainer = document.getElementById('cart-total-container');
+      if (cartTotalContainer) {
+        cartTotalContainer.classList.add('d-none');
+      }
     }
   }
 
